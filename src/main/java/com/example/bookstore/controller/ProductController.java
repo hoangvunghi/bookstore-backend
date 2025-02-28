@@ -1,5 +1,7 @@
 package com.example.bookstore.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.bookstore.dto.ProductDTO;
+import com.example.bookstore.dto.ProductImageDTO;
+import com.example.bookstore.service.ProductImageService;
 import com.example.bookstore.service.ProductService;
 
 @RestController
@@ -25,6 +29,9 @@ public class ProductController {
 
     @Autowired
     private ProductService productService;
+
+    @Autowired
+    private ProductImageService productImageService;
 
     // API lấy tất cả sản phẩm có phân trang
     @GetMapping
@@ -169,5 +176,60 @@ public class ProductController {
             @RequestParam(defaultValue = "0") int minStock,
             @PageableDefault(size = 10) Pageable pageable) {
         return ResponseEntity.ok(productService.getInStockProducts(minStock, pageable));
+    }
+
+    // API lấy danh sách ảnh của sản phẩm
+    @GetMapping("/{productId}/images")
+    public ResponseEntity<List<ProductImageDTO>> getProductImages(@PathVariable Long productId) {
+        List<ProductImageDTO> images = productImageService.getProductImages(productId);
+        if (images == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(images);
+    }
+
+    // API thêm ảnh cho sản phẩm (chỉ ADMIN)
+    @PostMapping("/{productId}/images")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ProductImageDTO> addProductImage(
+            @PathVariable Long productId,
+            @RequestParam String imageURL) {
+        ProductImageDTO image = productImageService.addProductImage(productId, imageURL);
+        if (image == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(image);
+    }
+
+    // API cập nhật ảnh sản phẩm (chỉ ADMIN)
+    @PutMapping("/images/{imageId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ProductImageDTO> updateProductImage(
+            @PathVariable Long imageId,
+            @RequestParam String imageURL) {
+        ProductImageDTO image = productImageService.updateProductImage(imageId, imageURL);
+        if (image == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(image);
+    }
+
+    // API xóa ảnh sản phẩm (chỉ ADMIN)
+    @DeleteMapping("/images/{imageId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteProductImage(@PathVariable Long imageId) {
+        boolean deleted = productImageService.deleteProductImage(imageId);
+        if (!deleted) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok().build();
+    }
+
+    // API xóa tất cả ảnh của sản phẩm (chỉ ADMIN)
+    @DeleteMapping("/{productId}/images")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteAllProductImages(@PathVariable Long productId) {
+        productImageService.deleteAllProductImages(productId);
+        return ResponseEntity.ok().build();
     }
 }
