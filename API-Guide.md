@@ -1,266 +1,278 @@
-# Hướng dẫn sử dụng API Bookstore
+# API Documentation - Bookstore Application
 
 ## Mục lục
-- [1. API Sản phẩm (Product)](#1-api-sản-phẩm-product)
-- [2. API Danh mục (Category)](#2-api-danh-mục-category)
-- [3. API Phân loại sản phẩm (Product Category)](#3-api-phân-loại-sản-phẩm-product-category)
+1. [Authentication API](#authentication-api)
+2. [User API](#user-api)
+3. [Product API](#product-api)
+4. [Category API](#category-api)
+5. [Cart API](#cart-api)
+6. [Order API](#order-api)
+7. [Review API](#review-api)
+8. [Password Reset API](#password-reset-api)
 
-## 1. API Sản phẩm (Product)
+## Authentication API
+Base URL: `/api/auth`
 
-### 1.1. API Cơ bản
+### Đăng nhập
+- **Endpoint**: `POST /login`
+- **Mô tả**: Đăng nhập vào hệ thống
+- **Request Body**:
+  ```json
+  {
+    "username": "string",
+    "password": "string"
+  }
+  ```
+- **Response**: JWT Token
 
-#### 1.1.1. Lấy danh sách sản phẩm
-- **URL**: `/api/products`
-- **Phương thức**: GET
-- **Tham số**:
+### Đăng ký
+- **Endpoint**: `POST /register`
+- **Mô tả**: Đăng ký tài khoản mới
+- **Request Body**:
+  ```json
+  {
+    "username": "string",
+    "password": "string",
+    "email": "string",
+    "fullName": "string"
+  }
+  ```
+- **Response**: Thông báo đăng ký thành công
+
+## User API
+Base URL: `/api/users`
+
+### Xem thông tin cá nhân
+- **Endpoint**: `GET /profile`
+- **Mô tả**: Lấy thông tin cá nhân của người dùng đang đăng nhập
+- **Authentication**: Required
+- **Response**: Thông tin profile người dùng
+
+## Product API
+Base URL: `/api/products`
+
+### Danh sách sản phẩm
+- **Endpoint**: `GET /`
+- **Mô tả**: Lấy danh sách tất cả sản phẩm có phân trang
+- **Parameters**:
   - `page`: Số trang (mặc định = 0)
   - `size`: Số sản phẩm mỗi trang (mặc định = 10)
-  - `sort`: Sắp xếp (VD: `name,desc` hoặc `price,asc`)
-- **Ví dụ**: `/api/products?page=0&size=10&sort=name,desc`
 
-#### 1.1.2. Lấy thông tin sản phẩm theo ID
-- **URL**: `/api/products/{id}`
-- **Phương thức**: GET
-- **Ví dụ**: `/api/products/1`
+### Chi tiết sản phẩm
+- **Endpoint**: `GET /{id}`
+- **Mô tả**: Lấy thông tin chi tiết của một sản phẩm
 
-#### 1.1.3. Tạo sản phẩm mới
-- **URL**: `/api/products`
-- **Phương thức**: POST
-- **Body mẫu**:
-```json
-{
-    "name": "Clean Code",
-    "description": "Sách về lập trình sạch",
-    "price": 450000,
-    "stockQuantity": 50,
-    "discount": 10,
-    "author": "Robert C. Martin",
-    "publisher": "Prentice Hall",
-    "publicationYear": 2008,
-    "pageCount": 464,
-    "ISBN": "9780132350884",
-    "categoryIds": [1, 2],
-    "imageUrls": ["url1", "url2"]
-}
-```
+### Tạo sản phẩm mới
+- **Endpoint**: `POST /`
+- **Mô tả**: Tạo sản phẩm mới (chỉ ADMIN)
+- **Authentication**: Required (ADMIN)
+- **Request Body**: Thông tin sản phẩm
 
-#### 1.1.4. Cập nhật sản phẩm
-- **URL**: `/api/products/{id}`
-- **Phương thức**: PUT
-- **Body**: Tương tự như tạo mới
+### Cập nhật sản phẩm
+- **Endpoint**: `PUT /{id}`
+- **Mô tả**: Cập nhật thông tin sản phẩm (chỉ ADMIN)
+- **Authentication**: Required (ADMIN)
+- **Request Body**: Thông tin cập nhật
 
-#### 1.1.5. Xóa sản phẩm
-- **URL**: `/api/products/{id}`
-- **Phương thức**: DELETE
+### Xóa sản phẩm
+- **Endpoint**: `DELETE /{id}`
+- **Mô tả**: Xóa sản phẩm (chỉ ADMIN)
+- **Authentication**: Required (ADMIN)
 
-### 1.2. API Tìm kiếm
+### Tìm kiếm sản phẩm
+- **Endpoint**: `GET /search/name`
+- **Mô tả**: Tìm kiếm theo tên
+- **Parameters**: `name`
 
-#### 1.2.1. Tìm theo tên sách
-- **URL**: `/api/products/search/name`
-- **Phương thức**: GET
-- **Tham số**: 
-  - `name`: Tên sách cần tìm
-  - `page`, `size`: Phân trang
-- **Ví dụ**: `/api/products/search/name?name=Clean Code&page=0&size=10`
+- **Endpoint**: `GET /search/author`
+- **Mô tả**: Tìm kiếm theo tác giả
+- **Parameters**: `author`
 
-#### 1.2.2. Tìm theo tác giả
-- **URL**: `/api/products/search/author`
-- **Phương thức**: GET
-- **Tham số**: 
-  - `author`: Tên tác giả
-- **Ví dụ**: `/api/products/search/author?author=Robert Martin`
+- **Endpoint**: `GET /search/publisher`
+- **Mô tả**: Tìm kiếm theo nhà xuất bản
+- **Parameters**: `publisher`
 
-#### 1.2.3. Tìm theo nhà xuất bản
-- **URL**: `/api/products/search/publisher`
-- **Phương thức**: GET
-- **Tham số**: 
-  - `publisher`: Tên nhà xuất bản
-- **Ví dụ**: `/api/products/search/publisher?publisher=Prentice Hall`
+- **Endpoint**: `GET /search/isbn`
+- **Mô tả**: Tìm kiếm theo ISBN
+- **Parameters**: `isbn`
 
-#### 1.2.4. Tìm theo ISBN
-- **URL**: `/api/products/search/isbn`
-- **Phương thức**: GET
-- **Tham số**: 
-  - `isbn`: Mã ISBN
-- **Ví dụ**: `/api/products/search/isbn?isbn=9780132350884`
+- **Endpoint**: `GET /search/price-range`
+- **Mô tả**: Tìm kiếm theo khoảng giá
+- **Parameters**: 
+  - `minPrice`
+  - `maxPrice`
 
-#### 1.2.5. Tìm theo khoảng giá
-- **URL**: `/api/products/search/price-range`
-- **Phương thức**: GET
-- **Tham số**: 
-  - `minPrice`: Giá tối thiểu
-  - `maxPrice`: Giá tối đa
-- **Ví dụ**: `/api/products/search/price-range?minPrice=100000&maxPrice=500000`
+- **Endpoint**: `GET /search/year`
+- **Mô tả**: Tìm kiếm theo năm xuất bản
+- **Parameters**: `year`
 
-#### 1.2.6. Tìm theo năm xuất bản
-- **URL**: `/api/products/search/year`
-- **Phương thức**: GET
-- **Tham số**: 
-  - `year`: Năm xuất bản
-- **Ví dụ**: `/api/products/search/year?year=2023`
+- **Endpoint**: `GET /search/category/{categoryId}`
+- **Mô tả**: Tìm kiếm theo danh mục
 
-#### 1.2.7. Tìm theo danh mục
-- **URL**: `/api/products/search/category/{categoryId}`
-- **Phương thức**: GET
-- **Ví dụ**: `/api/products/search/category/1`
+### Tìm kiếm nâng cao
+- **Endpoint**: `GET /search/advanced`
+- **Mô tả**: Tìm kiếm với nhiều tiêu chí
+- **Parameters**:
+  - `name` (optional)
+  - `author` (optional)
+  - `publisher` (optional)
+  - `minPrice` (optional)
+  - `maxPrice` (optional)
+  - `year` (optional)
+  - `categoryId` (optional)
 
-### 1.3. Tìm kiếm nâng cao
+### Sản phẩm đặc biệt
+- **Endpoint**: `GET /discounted`
+- **Mô tả**: Lấy danh sách sản phẩm đang giảm giá
+- **Parameters**: `minDiscount` (mặc định = 0)
 
-#### 1.3.1. Tìm kiếm kết hợp nhiều tiêu chí
-- **URL**: `/api/products/search/advanced`
-- **Phương thức**: GET
-- **Tham số**: (tất cả đều không bắt buộc)
-  - `name`: Tên sách
-  - `author`: Tác giả
-  - `publisher`: Nhà xuất bản
-  - `minPrice`: Giá tối thiểu
-  - `maxPrice`: Giá tối đa
-  - `year`: Năm xuất bản
-  - `categoryId`: ID danh mục
-- **Ví dụ**: `/api/products/search/advanced?name=Java&minPrice=100000&maxPrice=500000&year=2023`
+- **Endpoint**: `GET /new`
+- **Mô tả**: Lấy danh sách sản phẩm mới
+- **Parameters**: `year`
 
-### 1.4. API Đặc biệt
+- **Endpoint**: `GET /in-stock`
+- **Mô tả**: Lấy danh sách sản phẩm còn hàng
+- **Parameters**: `minStock` (mặc định = 0)
 
-#### 1.4.1. Lấy sản phẩm đang giảm giá
-- **URL**: `/api/products/discounted`
-- **Phương thức**: GET
-- **Tham số**: 
-  - `minDiscount`: Mức giảm giá tối thiểu (mặc định = 0)
-- **Ví dụ**: `/api/products/discounted?minDiscount=10`
+### Quản lý ảnh sản phẩm
+- **Endpoint**: `GET /{productId}/images`
+- **Mô tả**: Lấy danh sách ảnh của sản phẩm
 
-#### 1.4.2. Lấy sản phẩm mới
-- **URL**: `/api/products/new`
-- **Phương thức**: GET
-- **Tham số**: 
-  - `year`: Năm xuất bản
-- **Ví dụ**: `/api/products/new?year=2023`
+- **Endpoint**: `POST /{productId}/images`
+- **Mô tả**: Thêm ảnh cho sản phẩm (chỉ ADMIN)
+- **Authentication**: Required (ADMIN)
+- **Parameters**: `imageURL`
 
-#### 1.4.3. Lấy sản phẩm còn hàng
-- **URL**: `/api/products/in-stock`
-- **Phương thức**: GET
-- **Tham số**: 
-  - `minStock`: Số lượng tồn kho tối thiểu (mặc định = 0)
-- **Ví dụ**: `/api/products/in-stock?minStock=10`
+- **Endpoint**: `PUT /images/{imageId}`
+- **Mô tả**: Cập nhật ảnh sản phẩm (chỉ ADMIN)
+- **Authentication**: Required (ADMIN)
+- **Parameters**: `imageURL`
 
-## 2. API Danh mục (Category)
+- **Endpoint**: `DELETE /images/{imageId}`
+- **Mô tả**: Xóa ảnh sản phẩm (chỉ ADMIN)
+- **Authentication**: Required (ADMIN)
 
-### 2.1. Lấy danh sách danh mục
-- **URL**: `/api/categories`
-- **Phương thức**: GET
-- **Tham số phân trang**:
-  - `page`: Số trang (mặc định = 0)
-  - `size`: Số danh mục mỗi trang (mặc định = 10)
-- **Ví dụ**: `/api/categories?page=0&size=10`
+- **Endpoint**: `DELETE /{productId}/images`
+- **Mô tả**: Xóa tất cả ảnh của sản phẩm (chỉ ADMIN)
+- **Authentication**: Required (ADMIN)
 
-### 2.2. Lấy tất cả danh mục không phân trang
-- **URL**: `/api/categories/all`
-- **Phương thức**: GET
+## Category API
+Base URL: `/api/categories`
 
-### 2.3. Lấy danh mục theo ID
-- **URL**: `/api/categories/{id}`
-- **Phương thức**: GET
+### Danh sách danh mục
+- **Endpoint**: `GET /`
+- **Mô tả**: Lấy danh sách danh mục có phân trang
 
-### 2.4. Tạo danh mục mới
-- **URL**: `/api/categories`
-- **Phương thức**: POST
-- **Body mẫu**:
-```json
-{
-    "name": "Sách lập trình",
-    "parentCategoryId": null
-}
-```
+- **Endpoint**: `GET /all`
+- **Mô tả**: Lấy tất cả danh mục không phân trang
 
-### 2.5. Cập nhật danh mục
-- **URL**: `/api/categories/{id}`
-- **Phương thức**: PUT
-- **Body**: Tương tự như tạo mới
+### Chi tiết danh mục
+- **Endpoint**: `GET /{id}`
+- **Mô tả**: Lấy thông tin chi tiết của danh mục
 
-### 2.6. Xóa danh mục
-- **URL**: `/api/categories/{id}`
-- **Phương thức**: DELETE
+### Quản lý danh mục (ADMIN)
+- **Endpoint**: `POST /`
+- **Mô tả**: Tạo danh mục mới
+- **Authentication**: Required (ADMIN)
 
-## 3. API Phân loại sản phẩm (Product Category)
+- **Endpoint**: `PUT /{id}`
+- **Mô tả**: Cập nhật danh mục
+- **Authentication**: Required (ADMIN)
 
-### 3.1. Lấy danh sách phân loại sản phẩm
-- **URL**: `/api/product-categories`
-- **Phương thức**: GET
-- **Tham số phân trang**:
-  - `page`: Số trang (mặc định = 0)
-  - `size`: Số phân loại mỗi trang (mặc định = 10)
-- **Ví dụ**: `/api/product-categories?page=0&size=10`
+- **Endpoint**: `DELETE /{id}`
+- **Mô tả**: Xóa danh mục
+- **Authentication**: Required (ADMIN)
 
-### 3.2. Lấy tất cả phân loại không phân trang
-- **URL**: `/api/product-categories/all`
-- **Phương thức**: GET
+## Cart API
+Base URL: `/api/cart`
 
-### 3.3. Lấy phân loại theo ID
-- **URL**: `/api/product-categories/{id}`
-- **Phương thức**: GET
+### Xem giỏ hàng
+- **Endpoint**: `GET /`
+- **Mô tả**: Lấy thông tin giỏ hàng của người dùng hiện tại
+- **Authentication**: Required
 
-### 3.4. Tạo phân loại mới
-- **URL**: `/api/product-categories`
-- **Phương thức**: POST
-- **Body mẫu**:
-```json
-{
-    "productId": 1,
-    "categoryId": 1
-}
-```
+### Quản lý giỏ hàng
+- **Endpoint**: `POST /items/{productId}`
+- **Mô tả**: Thêm sản phẩm vào giỏ hàng
+- **Authentication**: Required
+- **Parameters**: `quantity` (mặc định = 1)
 
-### 3.5. Cập nhật phân loại
-- **URL**: `/api/product-categories/{id}`
-- **Phương thức**: PUT
-- **Body**: Tương tự như tạo mới
+- **Endpoint**: `PUT /items/{productId}`
+- **Mô tả**: Cập nhật số lượng sản phẩm trong giỏ hàng
+- **Authentication**: Required
+- **Parameters**: `quantity`
 
-### 3.6. Xóa phân loại
-- **URL**: `/api/product-categories/{id}`
-- **Phương thức**: DELETE
+- **Endpoint**: `DELETE /items/{productId}`
+- **Mô tả**: Xóa sản phẩm khỏi giỏ hàng
+- **Authentication**: Required
 
-## Cấu trúc dữ liệu
+- **Endpoint**: `DELETE /`
+- **Mô tả**: Xóa toàn bộ giỏ hàng
+- **Authentication**: Required
 
-### Response cho một sản phẩm
-```json
-{
-    "productId": 1,
-    "name": "Clean Code",
-    "description": "Sách về lập trình sạch",
-    "price": 450000,
-    "stockQuantity": 50,
-    "discount": 10,
-    "realPrice": 405000,
-    "author": "Robert C. Martin",
-    "publisher": "Prentice Hall",
-    "publicationYear": 2008,
-    "pageCount": 464,
-    "ISBN": "9780132350884",
-    "categoryIds": [1, 2],
-    "imageUrls": ["url1", "url2"],
-    "averageRating": 4.5,
-    "reviewCount": 100
-}
-```
+## Order API
+Base URL: `/api/orders`
 
-### Response cho danh sách có phân trang
-```json
-{
-    "content": [
-        // Mảng các đối tượng
-    ],
-    "totalElements": 100,    // Tổng số phần tử
-    "totalPages": 10,        // Tổng số trang
-    "number": 0,             // Trang hiện tại
-    "size": 10,             // Số phần tử mỗi trang
-    "first": true,          // Có phải trang đầu không
-    "last": false           // Có phải trang cuối không
-}
-```
+### Xem đơn hàng
+- **Endpoint**: `GET /my-orders`
+- **Mô tả**: Lấy danh sách đơn hàng của người dùng hiện tại
+- **Authentication**: Required
 
-## Lưu ý chung
-1. Tất cả các API trả về danh sách đều hỗ trợ phân trang
-2. Mặc định mỗi trang có 10 phần tử
-3. Có thể sắp xếp theo bất kỳ trường nào bằng tham số `sort`
-4. Tìm kiếm không phân biệt chữ hoa/thường
-5. Các API đều trả về mã lỗi 404 nếu không tìm thấy dữ liệu
-6. Đối với sản phẩm, giá trị trả về luôn bao gồm đánh giá trung bình và số lượng đánh giá 
+- **Endpoint**: `GET /{orderId}`
+- **Mô tả**: Lấy chi tiết đơn hàng
+- **Authentication**: Required
+
+### Quản lý đơn hàng
+- **Endpoint**: `POST /`
+- **Mô tả**: Tạo đơn hàng mới
+- **Authentication**: Required
+- **Request Body**: Danh sách sản phẩm
+
+- **Endpoint**: `PUT /{orderId}/status`
+- **Mô tả**: Cập nhật trạng thái đơn hàng (chỉ ADMIN)
+- **Authentication**: Required (ADMIN)
+- **Parameters**: `status`
+
+- **Endpoint**: `PUT /{orderId}/cancel`
+- **Mô tả**: Hủy đơn hàng
+- **Authentication**: Required
+
+- **Endpoint**: `GET /by-status`
+- **Mô tả**: Lấy danh sách đơn hàng theo trạng thái (chỉ ADMIN)
+- **Authentication**: Required (ADMIN)
+- **Parameters**: `status`
+
+## Review API
+Base URL: `/api/reviews`
+
+### Đánh giá sản phẩm
+- **Endpoint**: `POST /orders/{orderId}/products/{productId}`
+- **Mô tả**: Tạo đánh giá cho sản phẩm (chỉ cho phép khi đơn hàng đã hoàn thành và chỉ đánh giá 1 lần)
+- **Authentication**: Required
+- **Parameters**:
+  - `rating`: Số sao đánh giá (1-5)
+  - `comment`: Nội dung đánh giá
+
+## Password Reset API
+Base URL: `/api/password`
+
+### Quên mật khẩu
+- **Endpoint**: `POST /forgot`
+- **Mô tả**: Yêu cầu đặt lại mật khẩu
+- **Request Body**:
+  ```json
+  {
+    "email": "string"
+  }
+  ```
+
+### Đặt lại mật khẩu
+- **Endpoint**: `POST /reset`
+- **Mô tả**: Đặt lại mật khẩu với token
+- **Request Body**:
+  ```json
+  {
+    "token": "string",
+    "newPassword": "string"
+  }
+  ``` 
