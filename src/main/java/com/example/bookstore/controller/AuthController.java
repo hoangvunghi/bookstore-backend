@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.bookstore.dto.AuthRequest;
 import com.example.bookstore.dto.AuthResponse;
 import com.example.bookstore.dto.RegisterRequest;
+import com.example.bookstore.model.Role;
 import com.example.bookstore.model.User;
 import com.example.bookstore.repository.UserRepository;
 import com.example.bookstore.security.JwtService;
@@ -70,6 +71,7 @@ public class AuthController {
         newUser.setPassword(passwordEncoder.encode(request.getPassword()));
         newUser.setEmail(request.getEmail());
         newUser.setFullName(request.getFullName());
+        newUser.setRole(Role.USER.name());
         newUser.setActive(true);
         userRepository.save(newUser);
 

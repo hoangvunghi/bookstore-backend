@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -49,12 +50,14 @@ public class ProductCategoryController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProductCategoryDTO> createProductCategory(@RequestBody ProductCategoryDTO productCategoryDTO) {
         ProductCategoryDTO createdProductCategory = productCategoryService.createProductCategory(productCategoryDTO);
         return ResponseEntity.ok(createdProductCategory);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProductCategoryDTO> updateProductCategory(
             @PathVariable Long id,
             @RequestBody ProductCategoryDTO productCategoryDTO) {
@@ -66,6 +69,7 @@ public class ProductCategoryController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteProductCategory(@PathVariable Long id) {
         boolean deleted = productCategoryService.deleteProductCategory(id);
         if (deleted) {
