@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.bookstore.dto.ReviewDTO;
+import com.example.bookstore.dto.ApiResponse;
 import com.example.bookstore.security.UserDetailsImpl;
 import com.example.bookstore.service.ReviewService;
 
@@ -23,7 +24,7 @@ public class ReviewController {
     }
 
     @PostMapping("/orders/{orderId}/products/{productId}")
-    public ResponseEntity<ReviewDTO> createReview(
+    public ResponseEntity<ApiResponse> createReview(
             Authentication authentication,
             @PathVariable Long orderId,
             @PathVariable Long productId,
@@ -43,6 +44,6 @@ public class ReviewController {
             return ResponseEntity.badRequest().build();
         }
 
-        return ResponseEntity.ok(review);
+        return ResponseEntity.ok(new ApiResponse(true, "Tạo đánh giá thành công", review));
     }
 } 

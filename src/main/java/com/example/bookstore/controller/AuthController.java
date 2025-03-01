@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.bookstore.dto.ApiResponse;
 import com.example.bookstore.dto.AuthRequest;
 import com.example.bookstore.dto.AuthResponse;
 import com.example.bookstore.dto.RegisterRequest;
@@ -59,10 +60,10 @@ public class AuthController {
 
     // Register endpoint
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<ApiResponse> register(@RequestBody RegisterRequest request) {
         // Check if the username already exists
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-            return ResponseEntity.badRequest().body("Username already taken!");
+            return ResponseEntity.badRequest().body(new ApiResponse(false, "Tên đăng nhập đã tồn tại"));
         }
 
         // Create a new user
@@ -75,7 +76,7 @@ public class AuthController {
         newUser.setActive(true);
         userRepository.save(newUser);
 
-        return ResponseEntity.ok("User registered successfully!");
+        return ResponseEntity.ok(new ApiResponse(true, "Đăng ký tài khoản thành công"));
     }
 
     // Refresh token endpoint

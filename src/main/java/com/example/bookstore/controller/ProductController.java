@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.bookstore.dto.ProductDTO;
 import com.example.bookstore.dto.ProductImageDTO;
+import com.example.bookstore.dto.ApiResponse;
 import com.example.bookstore.service.ProductImageService;
 import com.example.bookstore.service.ProductService;
 
@@ -53,8 +54,9 @@ public class ProductController {
     // API tạo sản phẩm mới
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ProductDTO> createProduct(@RequestBody ProductDTO productDTO) {
-        return ResponseEntity.ok(productService.createProduct(productDTO));
+    public ResponseEntity<ApiResponse> createProduct(@RequestBody ProductDTO productDTO) {
+        ProductDTO createdProduct = productService.createProduct(productDTO);
+        return ResponseEntity.ok(new ApiResponse(true, "Tạo sản phẩm thành công", createdProduct));
     }
 
     // API cập nhật sản phẩm
@@ -73,9 +75,9 @@ public class ProductController {
     // API xóa sản phẩm
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse> deleteProduct(@PathVariable Long id) {
         if (productService.deleteProduct(id)) {
-            return ResponseEntity.ok().build();
+            return ResponseEntity.ok(new ApiResponse(true, "Xóa sản phẩm thành công"));
         }
         return ResponseEntity.notFound().build();
     }
@@ -191,14 +193,14 @@ public class ProductController {
     // API thêm ảnh cho sản phẩm (chỉ ADMIN)
     @PostMapping("/{productId}/images")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ProductImageDTO> addProductImage(
+    public ResponseEntity<ApiResponse> addProductImage(
             @PathVariable Long productId,
             @RequestParam String imageURL) {
         ProductImageDTO image = productImageService.addProductImage(productId, imageURL);
         if (image == null) {
             return ResponseEntity.badRequest().build();
         }
-        return ResponseEntity.ok(image);
+        return ResponseEntity.ok(new ApiResponse(true, "Thêm ảnh sản phẩm thành công", image));
     }
 
     // API cập nhật ảnh sản phẩm (chỉ ADMIN)
@@ -217,19 +219,19 @@ public class ProductController {
     // API xóa ảnh sản phẩm (chỉ ADMIN)
     @DeleteMapping("/images/{imageId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteProductImage(@PathVariable Long imageId) {
+    public ResponseEntity<ApiResponse> deleteProductImage(@PathVariable Long imageId) {
         boolean deleted = productImageService.deleteProductImage(imageId);
         if (!deleted) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(new ApiResponse(true, "Xóa ảnh sản phẩm thành công"));
     }
 
     // API xóa tất cả ảnh của sản phẩm (chỉ ADMIN)
     @DeleteMapping("/{productId}/images")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteAllProductImages(@PathVariable Long productId) {
+    public ResponseEntity<ApiResponse> deleteAllProductImages(@PathVariable Long productId) {
         productImageService.deleteAllProductImages(productId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(new ApiResponse(true, "Xóa tất cả ảnh sản phẩm thành công"));
     }
 }

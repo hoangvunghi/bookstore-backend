@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.bookstore.dto.CategoryDTO;
 import com.example.bookstore.service.CategoryService;
+import com.example.bookstore.dto.ApiResponse;
 
 @RestController
 @RequestMapping("/api/categories")
@@ -51,9 +52,9 @@ public class CategoryController {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<CategoryDTO> createCategory(@RequestBody CategoryDTO categoryDTO) {
+    public ResponseEntity<ApiResponse> createCategory(@RequestBody CategoryDTO categoryDTO) {
         CategoryDTO createdCategory = categoryService.createCategory(categoryDTO);
-        return ResponseEntity.ok(createdCategory);
+        return ResponseEntity.ok(new ApiResponse(true, "Tạo danh mục thành công", createdCategory));
     }
 
     @PutMapping("/{id}")
@@ -68,10 +69,10 @@ public class CategoryController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse> deleteCategory(@PathVariable Long id) {
         boolean deleted = categoryService.deleteCategory(id);
         if (deleted) {
-            return ResponseEntity.ok().build();
+            return ResponseEntity.ok(new ApiResponse(true, "Xóa danh mục thành công"));
         }
         return ResponseEntity.notFound().build();
     }

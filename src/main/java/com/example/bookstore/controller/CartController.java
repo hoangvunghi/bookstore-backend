@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.bookstore.dto.CartDTO;
+import com.example.bookstore.dto.ApiResponse;
 import com.example.bookstore.security.UserDetailsImpl;
 import com.example.bookstore.service.CartService;
 
@@ -68,7 +69,7 @@ public class CartController {
 
     // API xóa sản phẩm khỏi giỏ hàng
     @DeleteMapping("/items/{productId}")
-    public ResponseEntity<CartDTO> removeFromCart(
+    public ResponseEntity<ApiResponse> removeFromCart(
             Authentication authentication,
             @PathVariable Long productId) {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
@@ -78,14 +79,14 @@ public class CartController {
             return ResponseEntity.badRequest().build();
         }
         
-        return ResponseEntity.ok(updatedCart);
+        return ResponseEntity.ok(new ApiResponse(true, "Xóa sản phẩm khỏi giỏ hàng thành công", updatedCart));
     }
 
     // API xóa toàn bộ giỏ hàng
     @DeleteMapping
-    public ResponseEntity<Void> clearCart(Authentication authentication) {
+    public ResponseEntity<ApiResponse> clearCart(Authentication authentication) {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         cartService.clearCart(userDetails.getUser().getUserId());
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(new ApiResponse(true, "Xóa toàn bộ giỏ hàng thành công"));
     }
 } 
