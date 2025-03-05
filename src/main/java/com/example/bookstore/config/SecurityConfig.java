@@ -48,10 +48,12 @@ public class SecurityConfig {
                 .requestMatchers(new AntPathRequestMatcher("/api/auth/login")).permitAll() // Cho phép không cần auth
                 .requestMatchers(new AntPathRequestMatcher("/api/auth/refresh")).permitAll() // Cho phép không cần auth
                 .requestMatchers(new AntPathRequestMatcher("/api/auth/register")).permitAll() // Cho phép không cần auth
-                .requestMatchers(new AntPathRequestMatcher("/api/password/forgot")).permitAll() // Cho phép API quên mật khẩu
+                .requestMatchers(new AntPathRequestMatcher("/api/password/forgot")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/api/auth/role")).permitAll() // Cho phép API quên mật khẩu
                 .requestMatchers(new AntPathRequestMatcher("/api/password/reset/validate")).permitAll() // Cho phép API validate token
                 .requestMatchers(new AntPathRequestMatcher("/api/password/reset")).permitAll() // Cho phép API đặt lại mật khẩu
                 .requestMatchers(new AntPathRequestMatcher("/api/admin/**")).hasRole("ADMIN")
+
                 .anyRequest().authenticated() // Các request khác phải xác thực
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Không dùng session

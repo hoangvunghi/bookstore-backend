@@ -8,8 +8,10 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -127,6 +129,23 @@ public class AuthController {
             System.out.println("Lỗi tổng thể: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.status(500).body(new AuthResponse("", "", "Đã xảy ra lỗi: " + e.getMessage()));
+        }
+    }
+    // api check role
+    @GetMapping("/role")
+    public ResponseEntity<?> getRole(@RequestHeader("Authorization") String token) {
+        try {
+            String accessToken = token.replace("Bearer ", "");
+            String username = jwtService.extractUsernameFromAccessToken(accessToken);
+            Optional<User> userOptional = userRepository.findByUsername(username);
+            if (userOptional.isPresent()) {
+                String role = userOptional.get().getRole();
+                return ResponseEntity.ok(new ApiResponse(true, "Role retrieved successfully", role));
+            } else {
+                return ResponseEntity.status(404).body(new ApiResponse(false, "User not found"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body(new ApiResponse(false, "Invalid token"));
         }
     }
 }
