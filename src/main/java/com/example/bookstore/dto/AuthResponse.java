@@ -4,15 +4,25 @@ public class AuthResponse {
     private String accessToken;
     private String refreshToken;
     private String error;
+    private String role;
 
     // Constructors
     public AuthResponse() {}
 
-    public AuthResponse(String accessToken, String refreshToken) {
+    public AuthResponse(String accessToken, String refreshToken, String role) {
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
+        this.role = role;
     }
 
+    // get role
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
 
     // Getters and Setters
     public String getAccessToken() {

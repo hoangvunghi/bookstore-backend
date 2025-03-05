@@ -51,10 +51,11 @@ public class AuthController {
             UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
             String accessToken = jwtService.generateAccessToken(userDetails);
             String refreshToken = jwtService.generateRefreshToken(userDetails);
+            String role = userDetails.getRole();
 
-            return ResponseEntity.ok(new AuthResponse(accessToken, refreshToken));
+            return ResponseEntity.ok(new AuthResponse(accessToken, refreshToken, role));
         } catch (Exception e) {
-            return ResponseEntity.status(401).body(new AuthResponse("Invalid credentials", ""));
+            return ResponseEntity.status(401).body(new AuthResponse("", "", "Invalid credentials"));
         }
     }
 
@@ -64,6 +65,10 @@ public class AuthController {
         // Check if the username already exists
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
             return ResponseEntity.badRequest().body(new ApiResponse(false, "Tên đăng nhập đã tồn tại"));
+        }
+        // check if the email already exists
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            return ResponseEntity.badRequest().body(new ApiResponse(false, "Email đã tồn tại"));
         }
 
         // Create a new user
@@ -85,7 +90,7 @@ public class AuthController {
         String refreshToken = requestMap.get("refreshToken");
         
         if (refreshToken == null || refreshToken.isEmpty()) {
-            return ResponseEntity.status(400).body(new AuthResponse("Refresh token không được cung cấp", ""));
+            return ResponseEntity.status(400).body(new AuthResponse("", "", "Refresh token không được cung cấp"));
         }
         
         try {
@@ -99,13 +104,13 @@ public class AuthController {
             } catch (Exception e) {
                 System.out.println("Lỗi khi giải mã refresh token: " + e.getMessage());
                 e.printStackTrace();
-                return ResponseEntity.status(401).body(new AuthResponse("Invalid refresh token", ""));
+                return ResponseEntity.status(401).body(new AuthResponse("", "", "Invalid refresh token"));
             }
 
             // Kiểm tra xem người dùng tồn tại không
             Optional<User> userOptional = userRepository.findByUsername(username);
             if (userOptional.isEmpty()) {
-                return ResponseEntity.status(401).body(new AuthResponse("Không tìm thấy người dùng", ""));
+                return ResponseEntity.status(401).body(new AuthResponse("", "", "Không tìm thấy người dùng"));
             }
 
             UserDetailsImpl userDetails = new UserDetailsImpl(userOptional.get());
@@ -114,14 +119,14 @@ public class AuthController {
             if (jwtService.validateRefreshToken(refreshToken, userDetails)) {
                 // Tạo access token mới
                 String newAccessToken = jwtService.generateAccessToken(userDetails);
-                return ResponseEntity.ok(new AuthResponse(newAccessToken, refreshToken));
+                return ResponseEntity.ok(new AuthResponse(newAccessToken, refreshToken, userDetails.getRole()));
             } else {
-                return ResponseEntity.status(401).body(new AuthResponse("Refresh token không hợp lệ hoặc đã hết hạn", ""));
+                return ResponseEntity.status(401).body(new AuthResponse("", "", "Refresh token không hợp lệ hoặc đã hết hạn"));
             }
         } catch (Exception e) {
             System.out.println("Lỗi tổng thể: " + e.getMessage());
             e.printStackTrace();
-            return ResponseEntity.status(500).body(new AuthResponse("Đã xảy ra lỗi: " + e.getMessage(), ""));
+            return ResponseEntity.status(500).body(new AuthResponse("", "", "Đã xảy ra lỗi: " + e.getMessage()));
         }
     }
 }

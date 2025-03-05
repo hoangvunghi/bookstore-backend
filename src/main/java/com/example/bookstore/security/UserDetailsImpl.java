@@ -25,6 +25,11 @@ public class UserDetailsImpl implements UserDetails {
         return Collections.emptyList();
     }
 
+    // trả về role
+    public String getRole() {
+        return user.getRole();
+    }
+
     @Override
     public String getPassword() {
         return user.getPassword();
