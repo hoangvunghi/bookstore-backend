@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.bookstore.dto.ApiResponse;
 import com.example.bookstore.dto.OrderDTO;
 import com.example.bookstore.dto.OrderDetailDTO;
 import com.example.bookstore.security.UserDetailsImpl;
@@ -34,97 +35,105 @@ public class OrderController {
 
     // API lấy danh sách đơn hàng của người dùng hiện tại
     @GetMapping("/my-orders")
-    public ResponseEntity<Page<OrderDTO>> getMyOrders(
+    public ResponseEntity<ApiResponse> getMyOrders(
             Authentication authentication,
             @PageableDefault(size = 10, page = 0) Pageable pageable) {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         Page<OrderDTO> orders = orderService.getOrdersByUser(userDetails.getUser().getUserId(), pageable);
-        return ResponseEntity.ok(orders);
+        return ResponseEntity.ok(new ApiResponse(true, "Lấy danh sách đơn hàng thành công", orders));
     }
 
     // API lấy chi tiết một đơn hàng
     @GetMapping("/{orderId}")
-    public ResponseEntity<OrderDTO> getOrderById(
+    public ResponseEntity<ApiResponse> getOrderById(
             @PathVariable Long orderId,
             Authentication authentication) {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         OrderDTO order = orderService.getOrderById(orderId);
         
         if (order == null) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.notFound()
+                .build();
         }
 
         // Kiểm tra xem người dùng có quyền xem đơn hàng này không
         if (!order.getUserId().equals(userDetails.getUser().getUserId()) && 
             !userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
-            return ResponseEntity.status(403).build();
+            return ResponseEntity.status(403)
+                .body(new ApiResponse(false, "Không có quyền xem đơn hàng này"));
         }
 
-        return ResponseEntity.ok(order);
+        return ResponseEntity.ok(new ApiResponse(true, "Lấy thông tin đơn hàng thành công", order));
     }
 
     // API tạo đơn hàng mới
     @PostMapping
-    public ResponseEntity<OrderDTO> createOrder(
+    public ResponseEntity<ApiResponse> createOrder(
             Authentication authentication,
             @RequestBody List<OrderDetailDTO> items) {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         OrderDTO createdOrder = orderService.createOrder(userDetails.getUser().getUserId(), items);
         
         if (createdOrder == null) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest()
+                .body(new ApiResponse(false, "Tạo đơn hàng thất bại"));
         }
         
-        return ResponseEntity.ok(createdOrder);
+        return ResponseEntity.ok(new ApiResponse(true, "Tạo đơn hàng thành công", createdOrder));
     }
 
     // API cập nhật trạng thái đơn hàng (chỉ ADMIN)
     @PutMapping("/{orderId}/status")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<OrderDTO> updateOrderStatus(
+    public ResponseEntity<ApiResponse> updateOrderStatus(
             @PathVariable Long orderId,
             @RequestParam String status) {
         OrderDTO updatedOrder = orderService.updateOrderStatus(orderId, status);
         
         if (updatedOrder == null) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.notFound()
+                .build();
         }
         
-        return ResponseEntity.ok(updatedOrder);
+        return ResponseEntity.ok(new ApiResponse(true, "Cập nhật trạng thái đơn hàng thành công", updatedOrder));
     }
 
     // API hủy đơn hàng
     @PutMapping("/{orderId}/cancel")
-    public ResponseEntity<?> cancelOrder(
+    public ResponseEntity<ApiResponse> cancelOrder(
             @PathVariable Long orderId,
             Authentication authentication) {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         OrderDTO order = orderService.getOrderById(orderId);
         
         if (order == null) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.notFound()
+                .build();
         }
 
         // Kiểm tra xem người dùng có quyền hủy đơn hàng này không
         if (!order.getUserId().equals(userDetails.getUser().getUserId()) && 
             !userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
-            return ResponseEntity.status(403).build();
+            return ResponseEntity.status(403)
+                .body(new ApiResponse(false, "Không có quyền hủy đơn hàng này"));
         }
 
         boolean cancelled = orderService.cancelOrder(orderId);
         if (!cancelled) {
-            return ResponseEntity.badRequest().body("Không thể hủy đơn hàng này");
+            return ResponseEntity.badRequest()
+                .body(new ApiResponse(false, "Không thể hủy đơn hàng này"));
         }
         
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(new ApiResponse(true, "Hủy đơn hàng thành công"));
     }
 
     // API lấy danh sách đơn hàng theo trạng thái (chỉ ADMIN)
     @GetMapping("/by-status")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Page<OrderDTO>> getOrdersByStatus(
+    public ResponseEntity<ApiResponse> getOrdersByStatus(
             @RequestParam String status,
             @PageableDefault(size = 10, page = 0) Pageable pageable) {
-        return ResponseEntity.ok(orderService.getOrdersByStatus(status, pageable));
+        Page<OrderDTO> orders = orderService.getOrdersByStatus(status, pageable);
+        return ResponseEntity.ok(new ApiResponse(true, "Lấy danh sách đơn hàng theo trạng thái thành công", orders));
     }
 } 

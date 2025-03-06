@@ -18,9 +18,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.bookstore.dto.ApiResponse;
 import com.example.bookstore.dto.ProductDTO;
 import com.example.bookstore.dto.ProductImageDTO;
-import com.example.bookstore.dto.ApiResponse;
 import com.example.bookstore.service.ProductImageService;
 import com.example.bookstore.service.ProductService;
 
@@ -34,24 +34,23 @@ public class ProductController {
     @Autowired
     private ProductImageService productImageService;
 
-    // API lấy tất cả sản phẩm có phân trang
     @GetMapping
-    public ResponseEntity<Page<ProductDTO>> getAllProducts(
+    public ResponseEntity<ApiResponse> getAllProducts(
             @PageableDefault(size = 10, page = 0) Pageable pageable) {
-        return ResponseEntity.ok(productService.getAllProducts(pageable));
+        Page<ProductDTO> products = productService.getAllProducts(pageable);
+        return ResponseEntity.ok(new ApiResponse(true, "Lấy danh sách sản phẩm thành công", products));
     }
 
-    // API lấy sản phẩm theo ID
     @GetMapping("/{id}")
-    public ResponseEntity<ProductDTO> getProductById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse> getProductById(@PathVariable Long id) {
         ProductDTO product = productService.getProductById(id);
-        if (product != null) {
-            return ResponseEntity.ok(product);
+        if (product == null) {
+            return ResponseEntity.notFound()
+                .build();
         }
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(new ApiResponse(true, "Lấy thông tin sản phẩm thành công", product));
     }
 
-    // API tạo sản phẩm mới
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> createProduct(@RequestBody ProductDTO productDTO) {
@@ -59,91 +58,90 @@ public class ProductController {
         return ResponseEntity.ok(new ApiResponse(true, "Tạo sản phẩm thành công", createdProduct));
     }
 
-    // API cập nhật sản phẩm
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ProductDTO> updateProduct(
+    public ResponseEntity<ApiResponse> updateProduct(
             @PathVariable Long id,
             @RequestBody ProductDTO productDTO) {
         ProductDTO updatedProduct = productService.updateProduct(id, productDTO);
-        if (updatedProduct != null) {
-            return ResponseEntity.ok(updatedProduct);
+        if (updatedProduct == null) {
+            return ResponseEntity.notFound()
+                .build();
         }
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(new ApiResponse(true, "Cập nhật sản phẩm thành công", updatedProduct));
     }
 
-    // API xóa sản phẩm
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> deleteProduct(@PathVariable Long id) {
         if (productService.deleteProduct(id)) {
             return ResponseEntity.ok(new ApiResponse(true, "Xóa sản phẩm thành công"));
         }
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.notFound()
+            .build();
     }
 
-    // API tìm kiếm theo tên
     @GetMapping("/search/name")
-    public ResponseEntity<Page<ProductDTO>> searchByName(
+    public ResponseEntity<ApiResponse> searchByName(
             @RequestParam String name,
             @PageableDefault(size = 10) Pageable pageable) {
-        return ResponseEntity.ok(productService.searchByName(name, pageable));
+        Page<ProductDTO> products = productService.searchByName(name, pageable);
+        return ResponseEntity.ok(new ApiResponse(true, "Tìm kiếm sản phẩm theo tên thành công", products));
     }
 
-    // API tìm kiếm theo tác giả
     @GetMapping("/search/author")
-    public ResponseEntity<Page<ProductDTO>> searchByAuthor(
+    public ResponseEntity<ApiResponse> searchByAuthor(
             @RequestParam String author,
             @PageableDefault(size = 10) Pageable pageable) {
-        return ResponseEntity.ok(productService.searchByAuthor(author, pageable));
+        Page<ProductDTO> products = productService.searchByAuthor(author, pageable);
+        return ResponseEntity.ok(new ApiResponse(true, "Tìm kiếm sản phẩm theo tác giả thành công", products));
     }
 
-    // API tìm kiếm theo nhà xuất bản
     @GetMapping("/search/publisher")
-    public ResponseEntity<Page<ProductDTO>> searchByPublisher(
+    public ResponseEntity<ApiResponse> searchByPublisher(
             @RequestParam String publisher,
             @PageableDefault(size = 10) Pageable pageable) {
-        return ResponseEntity.ok(productService.searchByPublisher(publisher, pageable));
+        Page<ProductDTO> products = productService.searchByPublisher(publisher, pageable);
+        return ResponseEntity.ok(new ApiResponse(true, "Tìm kiếm sản phẩm theo nhà xuất bản thành công", products));
     }
 
-    // API tìm kiếm theo ISBN
     @GetMapping("/search/isbn")
-    public ResponseEntity<ProductDTO> searchByISBN(@RequestParam String isbn) {
+    public ResponseEntity<ApiResponse> searchByISBN(@RequestParam String isbn) {
         ProductDTO product = productService.searchByISBN(isbn);
-        if (product != null) {
-            return ResponseEntity.ok(product);
+        if (product == null) {
+            return ResponseEntity.notFound()
+                .build();
         }
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(new ApiResponse(true, "Tìm kiếm sản phẩm theo ISBN thành công", product));
     }
 
-    // API tìm kiếm theo khoảng giá
     @GetMapping("/search/price-range")
-    public ResponseEntity<Page<ProductDTO>> searchByPriceRange(
+    public ResponseEntity<ApiResponse> searchByPriceRange(
             @RequestParam int minPrice,
             @RequestParam int maxPrice,
             @PageableDefault(size = 10) Pageable pageable) {
-        return ResponseEntity.ok(productService.searchByPriceRange(minPrice, maxPrice, pageable));
+        Page<ProductDTO> products = productService.searchByPriceRange(minPrice, maxPrice, pageable);
+        return ResponseEntity.ok(new ApiResponse(true, "Tìm kiếm sản phẩm theo khoảng giá thành công", products));
     }
 
-    // API tìm kiếm theo năm xuất bản
     @GetMapping("/search/year")
-    public ResponseEntity<Page<ProductDTO>> searchByPublicationYear(
+    public ResponseEntity<ApiResponse> searchByPublicationYear(
             @RequestParam int year,
             @PageableDefault(size = 10) Pageable pageable) {
-        return ResponseEntity.ok(productService.searchByPublicationYear(year, pageable));
+        Page<ProductDTO> products = productService.searchByPublicationYear(year, pageable);
+        return ResponseEntity.ok(new ApiResponse(true, "Tìm kiếm sản phẩm theo năm xuất bản thành công", products));
     }
 
-    // API tìm kiếm theo danh mục
     @GetMapping("/search/category/{categoryId}")
-    public ResponseEntity<Page<ProductDTO>> searchByCategory(
+    public ResponseEntity<ApiResponse> searchByCategory(
             @PathVariable Long categoryId,
             @PageableDefault(size = 10) Pageable pageable) {
-        return ResponseEntity.ok(productService.searchByCategory(categoryId, pageable));
+        Page<ProductDTO> products = productService.searchByCategory(categoryId, pageable);
+        return ResponseEntity.ok(new ApiResponse(true, "Tìm kiếm sản phẩm theo danh mục thành công", products));
     }
 
-    // API tìm kiếm nâng cao
     @GetMapping("/search/advanced")
-    public ResponseEntity<Page<ProductDTO>> advancedSearch(
+    public ResponseEntity<ApiResponse> advancedSearch(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String author,
             @RequestParam(required = false) String publisher,
@@ -152,45 +150,45 @@ public class ProductController {
             @RequestParam(required = false) Integer year,
             @RequestParam(required = false) Long categoryId,
             @PageableDefault(size = 10) Pageable pageable) {
-        return ResponseEntity.ok(productService.advancedSearch(
-                name, author, publisher, minPrice, maxPrice, year, categoryId, pageable));
+        Page<ProductDTO> products = productService.advancedSearch(
+                name, author, publisher, minPrice, maxPrice, year, categoryId, pageable);
+        return ResponseEntity.ok(new ApiResponse(true, "Tìm kiếm nâng cao thành công", products));
     }
 
-    // API lấy sản phẩm đang giảm giá
     @GetMapping("/discounted")
-    public ResponseEntity<Page<ProductDTO>> getDiscountedProducts(
+    public ResponseEntity<ApiResponse> getDiscountedProducts(
             @RequestParam(defaultValue = "0") int minDiscount,
             @PageableDefault(size = 10) Pageable pageable) {
-        return ResponseEntity.ok(productService.getDiscountedProducts(minDiscount, pageable));
+        Page<ProductDTO> products = productService.getDiscountedProducts(minDiscount, pageable);
+        return ResponseEntity.ok(new ApiResponse(true, "Lấy danh sách sản phẩm giảm giá thành công", products));
     }
 
-    // API lấy sản phẩm mới
     @GetMapping("/new")
-    public ResponseEntity<Page<ProductDTO>> getNewProducts(
+    public ResponseEntity<ApiResponse> getNewProducts(
             @RequestParam int year,
             @PageableDefault(size = 10) Pageable pageable) {
-        return ResponseEntity.ok(productService.getNewProducts(year, pageable));
+        Page<ProductDTO> products = productService.getNewProducts(year, pageable);
+        return ResponseEntity.ok(new ApiResponse(true, "Lấy danh sách sản phẩm mới thành công", products));
     }
 
-    // API lấy sản phẩm còn hàng
     @GetMapping("/in-stock")
-    public ResponseEntity<Page<ProductDTO>> getInStockProducts(
+    public ResponseEntity<ApiResponse> getInStockProducts(
             @RequestParam(defaultValue = "0") int minStock,
             @PageableDefault(size = 10) Pageable pageable) {
-        return ResponseEntity.ok(productService.getInStockProducts(minStock, pageable));
+        Page<ProductDTO> products = productService.getInStockProducts(minStock, pageable);
+        return ResponseEntity.ok(new ApiResponse(true, "Lấy danh sách sản phẩm còn hàng thành công", products));
     }
 
-    // API lấy danh sách ảnh của sản phẩm
     @GetMapping("/{productId}/images")
-    public ResponseEntity<List<ProductImageDTO>> getProductImages(@PathVariable Long productId) {
+    public ResponseEntity<ApiResponse> getProductImages(@PathVariable Long productId) {
         List<ProductImageDTO> images = productImageService.getProductImages(productId);
         if (images == null) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.notFound()
+                .build();
         }
-        return ResponseEntity.ok(images);
+        return ResponseEntity.ok(new ApiResponse(true, "Lấy danh sách ảnh sản phẩm thành công", images));
     }
 
-    // API thêm ảnh cho sản phẩm (chỉ ADMIN)
     @PostMapping("/{productId}/images")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> addProductImage(
@@ -198,36 +196,35 @@ public class ProductController {
             @RequestParam String imageURL) {
         ProductImageDTO image = productImageService.addProductImage(productId, imageURL);
         if (image == null) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest()
+                .body(new ApiResponse(false, "Thêm ảnh sản phẩm thất bại"));
         }
         return ResponseEntity.ok(new ApiResponse(true, "Thêm ảnh sản phẩm thành công", image));
     }
 
-    // API cập nhật ảnh sản phẩm (chỉ ADMIN)
     @PutMapping("/images/{imageId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ProductImageDTO> updateProductImage(
+    public ResponseEntity<ApiResponse> updateProductImage(
             @PathVariable Long imageId,
             @RequestParam String imageURL) {
         ProductImageDTO image = productImageService.updateProductImage(imageId, imageURL);
         if (image == null) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.notFound()
+                .build();
         }
-        return ResponseEntity.ok(image);
+        return ResponseEntity.ok(new ApiResponse(true, "Cập nhật ảnh sản phẩm thành công", image));
     }
 
-    // API xóa ảnh sản phẩm (chỉ ADMIN)
     @DeleteMapping("/images/{imageId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> deleteProductImage(@PathVariable Long imageId) {
-        boolean deleted = productImageService.deleteProductImage(imageId);
-        if (!deleted) {
-            return ResponseEntity.notFound().build();
+        if (productImageService.deleteProductImage(imageId)) {
+            return ResponseEntity.ok(new ApiResponse(true, "Xóa ảnh sản phẩm thành công"));
         }
-        return ResponseEntity.ok(new ApiResponse(true, "Xóa ảnh sản phẩm thành công"));
+        return ResponseEntity.notFound()
+            .build();
     }
 
-    // API xóa tất cả ảnh của sản phẩm (chỉ ADMIN)
     @DeleteMapping("/{productId}/images")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> deleteAllProductImages(@PathVariable Long productId) {

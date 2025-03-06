@@ -58,7 +58,8 @@ public class SecurityConfig {
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Không dùng session
             .csrf(csrf -> csrf.disable()) // Tắt CSRF (vì API REST không cần)
-            // .cors(cors -> cors.disable()) // Tắt CORS nếu không cần
+            .cors() // Bật CORS và sử dụng CorsFilter đã được cấu hình
+            .and()
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
              
         return http.build();

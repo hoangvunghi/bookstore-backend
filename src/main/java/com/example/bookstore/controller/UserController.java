@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.bookstore.dto.ApiResponse;
 import com.example.bookstore.dto.UserProfileDTO;
 import com.example.bookstore.model.User;
 import com.example.bookstore.security.UserDetailsImpl;
@@ -24,12 +25,13 @@ public class UserController {
     }
 
     @GetMapping("/profile")
-    public ResponseEntity<?> getProfile(Authentication authentication) {
+    public ResponseEntity<ApiResponse> getProfile(Authentication authentication) {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         User user = userService.getUserById(userDetails.getUser().getUserId());
         
         if (user == null) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.notFound()
+                .build();
         }
 
         // Tạo DTO để trả về (không bao gồm mật khẩu)
@@ -39,11 +41,11 @@ public class UserController {
         profileDTO.setPhoneNumber(user.getPhoneNumber());
         profileDTO.setAddress(user.getAddress());
 
-        return ResponseEntity.ok(profileDTO);
+        return ResponseEntity.ok(new ApiResponse(true, "Lấy thông tin profile thành công", profileDTO));
     }
 
     @PutMapping("/profile")
-    public ResponseEntity<?> updateProfile(
+    public ResponseEntity<ApiResponse> updateProfile(
             Authentication authentication,
             @RequestBody UserProfileDTO profileDTO) {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
@@ -57,14 +59,16 @@ public class UserController {
             );
             
             if (!passwordChanged) {
-                return ResponseEntity.badRequest().body("Mật khẩu hiện tại không đúng");
+                return ResponseEntity.badRequest()
+                    .body(new ApiResponse(false, "Mật khẩu hiện tại không đúng"));
             }
         }
 
         // Cập nhật thông tin cá nhân
         User updatedUser = userService.updateProfile(userDetails.getUser().getUserId(), profileDTO);
         if (updatedUser == null) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.notFound()
+                .build();
         }
 
         // Tạo DTO để trả về
@@ -74,6 +78,6 @@ public class UserController {
         updatedProfile.setPhoneNumber(updatedUser.getPhoneNumber());
         updatedProfile.setAddress(updatedUser.getAddress());
 
-        return ResponseEntity.ok(updatedProfile);
+        return ResponseEntity.ok(new ApiResponse(true, "Cập nhật profile thành công", updatedProfile));
     }
 }
