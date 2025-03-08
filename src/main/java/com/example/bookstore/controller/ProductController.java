@@ -402,6 +402,37 @@ public class ProductController {
         }
     }
 
+    @GetMapping("/best-selling")
+    public ResponseEntity<ApiResponse> getBestSellingProducts(
+            @RequestParam(defaultValue = "0") int minSold,
+            @PageableDefault(size = 10) Pageable pageable) {
+        try {
+            Page<ProductDTO> products = productService.getBestSellingProducts(minSold, pageable);
+            return ResponseEntity.ok(new ApiResponse(true, "Lấy danh sách sản phẩm bán chạy thành công", products));
+        } catch (PropertyReferenceException e) {
+            return ResponseEntity.badRequest()
+                .body(new ApiResponse(false, "Tham số sắp xếp không hợp lệ", null));
+        } catch (Exception e) {
+            return ResponseEntity.status(500)
+                .body(new ApiResponse(false, "Lấy danh sách sản phẩm bán chạy thất bại: " + e.getMessage(), null));
+        }
+    }
+    
+    @GetMapping("/top-selling")
+    public ResponseEntity<ApiResponse> getTopSellingProducts(
+            @PageableDefault(size = 10) Pageable pageable) {
+        try {
+            Page<ProductDTO> products = productService.getTopSellingProducts(pageable);
+            return ResponseEntity.ok(new ApiResponse(true, "Lấy danh sách sản phẩm bán chạy nhất thành công", products));
+        } catch (PropertyReferenceException e) {
+            return ResponseEntity.badRequest()
+                .body(new ApiResponse(false, "Tham số sắp xếp không hợp lệ", null));
+        } catch (Exception e) {
+            return ResponseEntity.status(500)
+                .body(new ApiResponse(false, "Lấy danh sách sản phẩm bán chạy nhất thất bại: " + e.getMessage(), null));
+        }
+    }
+
     @GetMapping("/{productId}/images")
     public ResponseEntity<ApiResponse> getProductImages(@PathVariable Long productId) {
         try {

@@ -61,4 +61,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     
     // Lấy sách theo tồn kho
     Page<Product> findByStockQuantityGreaterThan(int minStock, Pageable pageable);
+    
+    // Lấy sách bán chạy (theo số lượng đã bán)
+    Page<Product> findBySoldCountGreaterThanOrderBySoldCountDesc(int minSold, Pageable pageable);
+    
+    // Lấy top sách bán chạy nhất
+    Page<Product> findAllByOrderBySoldCountDesc(Pageable pageable);
 }

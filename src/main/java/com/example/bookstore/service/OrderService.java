@@ -117,6 +117,10 @@ public class OrderService {
             
             details.add(detail);
             totalAmount += detail.getPrice() * detail.getQuantity();
+            
+            // Cập nhật số lượng đã bán (soldCount) của sản phẩm
+            product.setSoldCount(product.getSoldCount() + item.getQuantity());
+            productRepository.save(product);
         }
 
         // Lưu chi tiết đơn hàng
@@ -137,8 +141,21 @@ public class OrderService {
             return null;
         }
 
+        String oldStatus = order.getStatus();
         order.setStatus(status);
         order = orderRepository.save(order);
+        
+        // Nếu đơn hàng bị hủy, cập nhật lại soldCount
+        if (status.equals("CANCELLED") && !oldStatus.equals("CANCELLED")) {
+            List<OrderDetail> details = orderDetailRepository.findByOrderOrderId(orderId);
+            for (OrderDetail detail : details) {
+                Product product = detail.getProduct();
+                // Giảm soldCount khi hủy đơn hàng
+                product.setSoldCount(Math.max(0, product.getSoldCount() - detail.getQuantity()));
+                productRepository.save(product);
+            }
+        }
+        
         return convertToDTO(order);
     }
 
@@ -152,6 +169,16 @@ public class OrderService {
 
         order.setStatus("CANCELLED");
         orderRepository.save(order);
+        
+        // Cập nhật lại soldCount khi hủy đơn hàng
+        List<OrderDetail> details = orderDetailRepository.findByOrderOrderId(orderId);
+        for (OrderDetail detail : details) {
+            Product product = detail.getProduct();
+            // Giảm soldCount khi hủy đơn hàng
+            product.setSoldCount(Math.max(0, product.getSoldCount() - detail.getQuantity()));
+            productRepository.save(product);
+        }
+        
         return true;
     }
 

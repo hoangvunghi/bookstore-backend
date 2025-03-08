@@ -162,6 +162,16 @@ public class ProductService {
                 .map(this::convertToDTO);
     }
 
+    public Page<ProductDTO> getBestSellingProducts(int minSold, Pageable pageable) {
+        return productRepository.findBySoldCountGreaterThanOrderBySoldCountDesc(minSold, pageable)
+                .map(this::convertToDTO);
+    }
+
+    public Page<ProductDTO> getTopSellingProducts(Pageable pageable) {
+        return productRepository.findAllByOrderBySoldCountDesc(pageable)
+                .map(this::convertToDTO);
+    }
+
     // Phương thức chuyển đổi Entity sang DTO
     private ProductDTO convertToDTO(Product product) {
         ProductDTO dto = new ProductDTO();
@@ -177,6 +187,7 @@ public class ProductService {
         dto.setPublicationYear(product.getPublicationYear());
         dto.setPageCount(product.getPageCount());
         dto.setISBN(product.getISBN());
+        dto.setSoldCount(product.getSoldCount());
         
         // Chuyển đổi danh sách category IDs
         if (product.getCategories() != null) {
@@ -220,6 +231,7 @@ public class ProductService {
         product.setPublicationYear(dto.getPublicationYear());
         product.setPageCount(dto.getPageCount());
         product.setISBN(dto.getISBN());
+        product.setSoldCount(dto.getSoldCount());
         
         // Chuyển đổi danh sách categories
         if (dto.getCategoryIds() != null) {

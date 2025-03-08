@@ -15,6 +15,7 @@ public class ProductDTO {
     private int publicationYear;
     private int pageCount;
     private String ISBN;
+    private int soldCount;
     private List<Long> categoryIds;
     private List<String> imageUrls;
     private double averageRating;
@@ -47,6 +48,8 @@ public class ProductDTO {
     public void setPageCount(int pageCount) { this.pageCount = pageCount; }
     public String getISBN() { return ISBN; }
     public void setISBN(String ISBN) { this.ISBN = ISBN; }
+    public int getSoldCount() { return soldCount; }
+    public void setSoldCount(int soldCount) { this.soldCount = soldCount; }
     public List<Long> getCategoryIds() { return categoryIds; }
     public void setCategoryIds(List<Long> categoryIds) { this.categoryIds = categoryIds; }
     public List<String> getImageUrls() { return imageUrls; }

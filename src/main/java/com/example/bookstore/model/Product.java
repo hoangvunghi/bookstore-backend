@@ -1,7 +1,17 @@
 package com.example.bookstore.model;
 
-import jakarta.persistence.*;
 import java.util.List;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "products")
@@ -11,7 +21,10 @@ public class Product {
     private Long productId;
 
     private String name;
+    
+    @Column(columnDefinition = "TEXT")
     private String description;
+    
     private int price;
     private int stockQuantity;
     private int discount;
@@ -21,6 +34,7 @@ public class Product {
     private int publicationYear;
     private int pageCount;
     private String ISBN;
+    private int soldCount;
 
     @OneToMany(mappedBy = "product")
     private List<Review> reviews;
@@ -69,6 +83,8 @@ public class Product {
     public void setPageCount(int pageCount) { this.pageCount = pageCount; }
     public String getISBN() { return ISBN; }
     public void setISBN(String ISBN) { this.ISBN = ISBN; }
+    public int getSoldCount() { return soldCount; }
+    public void setSoldCount(int soldCount) { this.soldCount = soldCount; }
     public List<Review> getReviews() { return reviews; }
     public void setReviews(List<Review> reviews) { this.reviews = reviews; }
     public List<CartDetail> getCartDetails() { return cartDetails; }
