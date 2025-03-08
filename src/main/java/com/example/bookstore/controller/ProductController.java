@@ -8,8 +8,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,6 +26,9 @@ import com.example.bookstore.dto.ProductDTO;
 import com.example.bookstore.dto.ProductImageDTO;
 import com.example.bookstore.service.ProductImageService;
 import com.example.bookstore.service.ProductService;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 
 @RestController
 @RequestMapping("/api/products")
@@ -34,6 +39,28 @@ public class ProductController {
 
     @Autowired
     private ProductImageService productImageService;
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
+        String errorMessage = "Dữ liệu JSON không hợp lệ";
+        
+        Throwable cause = ex.getCause();
+        if (cause instanceof JsonParseException) {
+            errorMessage = "Lỗi cú pháp JSON: " + cause.getMessage();
+        } else if (cause instanceof JsonMappingException) {
+            if (cause instanceof InvalidFormatException) {
+                InvalidFormatException ife = (InvalidFormatException) cause;
+                errorMessage = "Giá trị không hợp lệ cho trường '" + 
+                    (ife.getPath().isEmpty() ? "không xác định" : ife.getPath().get(0).getFieldName()) + 
+                    "'. Giá trị đúng phải là kiểu " + ife.getTargetType().getSimpleName();
+            } else {
+                errorMessage = "Lỗi ánh xạ JSON: " + cause.getMessage();
+            }
+        }
+        
+        return ResponseEntity.badRequest()
+            .body(new ApiResponse(false, errorMessage, null));
+    }
 
     @GetMapping
     public ResponseEntity<ApiResponse> getAllProducts(
@@ -69,11 +96,68 @@ public class ProductController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> createProduct(@RequestBody ProductDTO productDTO) {
         try {
+            if (productDTO.getProductId() != null && productDTO.getProductId() > 0) {
+                return ResponseEntity.badRequest()
+                    .body(new ApiResponse(false, 
+                        "Không thể tạo sản phẩm với ID đã được chỉ định. " +
+                        "Để tạo sản phẩm mới, vui lòng không cung cấp productId. " +
+                        "Để cập nhật sản phẩm, vui lòng sử dụng phương thức PUT /api/products/{id}", null));
+            }
+            
+            if (productDTO.getName() == null || productDTO.getName().trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                    .body(new ApiResponse(false, "Tên sản phẩm không được để trống", null));
+            }
+            
+            if (productDTO.getPrice() <= 0) {
+                return ResponseEntity.badRequest()
+                    .body(new ApiResponse(false, "Giá sản phẩm phải lớn hơn 0", null));
+            }
+            
+            if (productDTO.getStockQuantity() < 0) {
+                return ResponseEntity.badRequest()
+                    .body(new ApiResponse(false, "Số lượng tồn kho không được âm", null));
+            }
+            
+            if (productDTO.getDiscount() < 0 || productDTO.getDiscount() > 100) {
+                return ResponseEntity.badRequest()
+                    .body(new ApiResponse(false, "Giảm giá phải từ 0 đến 100%", null));
+            }
+            
+            if (productDTO.getPublicationYear() < 0 || productDTO.getPublicationYear() > 9999) {
+                return ResponseEntity.badRequest()
+                    .body(new ApiResponse(false, "Năm xuất bản không hợp lệ", null));
+            }
+            
             ProductDTO createdProduct = productService.createProduct(productDTO);
             return ResponseEntity.ok(new ApiResponse(true, "Tạo sản phẩm thành công", createdProduct));
         } catch (Exception e) {
+            String errorMessage = e.getMessage();
+            
+            if (errorMessage != null && errorMessage.contains("Row was updated or deleted by another transaction")) {
+                return ResponseEntity.badRequest()
+                    .body(new ApiResponse(false, 
+                        "Không thể tạo sản phẩm với ID đã tồn tại. " +
+                        "Để tạo sản phẩm mới, vui lòng không cung cấp productId. " +
+                        "Để cập nhật sản phẩm, vui lòng sử dụng phương thức PUT /api/products/{id}", null));
+            }
+            
+            if (errorMessage != null && errorMessage.contains("duplicate key value violates unique constraint \"productcategory_pkey\"")) {
+                return ResponseEntity.badRequest()
+                    .body(new ApiResponse(false, 
+                        "Không thể liên kết sản phẩm với danh mục. Danh mục đã được liên kết với sản phẩm khác. " +
+                        "Vui lòng kiểm tra lại danh sách categoryIds hoặc liên hệ quản trị viên để được hỗ trợ.", null));
+            }
+            
+            if (errorMessage != null && errorMessage.contains("violates foreign key constraint")) {
+                if (errorMessage.contains("categoryids")) {
+                    return ResponseEntity.badRequest()
+                        .body(new ApiResponse(false, "Một hoặc nhiều danh mục không tồn tại. Vui lòng kiểm tra lại danh sách categoryIds.", null));
+                }
+            }
+            
             return ResponseEntity.badRequest()
-                .body(new ApiResponse(false, "Tạo sản phẩm thất bại: " + e.getMessage(), null));
+                .body(new ApiResponse(false, "Tạo sản phẩm thất bại: " + errorMessage, null));
         }
     }
 
@@ -83,6 +167,31 @@ public class ProductController {
             @PathVariable Long id,
             @RequestBody ProductDTO productDTO) {
         try {
+            if (productDTO.getName() != null && productDTO.getName().trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                    .body(new ApiResponse(false, "Tên sản phẩm không được để trống", null));
+            }
+            
+            if (productDTO.getPrice() <= 0) {
+                return ResponseEntity.badRequest()
+                    .body(new ApiResponse(false, "Giá sản phẩm phải lớn hơn 0", null));
+            }
+            
+            if (productDTO.getStockQuantity() < 0) {
+                return ResponseEntity.badRequest()
+                    .body(new ApiResponse(false, "Số lượng tồn kho không được âm", null));
+            }
+            
+            if (productDTO.getDiscount() < 0 || productDTO.getDiscount() > 100) {
+                return ResponseEntity.badRequest()
+                    .body(new ApiResponse(false, "Giảm giá phải từ 0 đến 100%", null));
+            }
+            
+            if (productDTO.getPublicationYear() < 0 || productDTO.getPublicationYear() > 9999) {
+                return ResponseEntity.badRequest()
+                    .body(new ApiResponse(false, "Năm xuất bản không hợp lệ", null));
+            }
+            
             ProductDTO updatedProduct = productService.updateProduct(id, productDTO);
             if (updatedProduct == null) {
                 return ResponseEntity.notFound()
