@@ -7,6 +7,7 @@ import java.util.Date;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -62,6 +63,26 @@ public class JwtService {
                 .setExpiration(new Date(System.currentTimeMillis() + expiryDuration))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+    // Lấy thời điểm hết hạn của token
+    public Date getExpirationDateFromToken(String token, Key key) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        return claims.getExpiration();
+    }
+
+    // Lấy thời điểm hết hạn của access token
+    public Date getAccessTokenExpiration(String token) {
+        return getExpirationDateFromToken(token, getSigningKey(accessSecret));
+    }
+
+    // Lấy thời điểm hết hạn của refresh token
+    public Date getRefreshTokenExpiration(String token) {
+        return getExpirationDateFromToken(token, getSigningKey(refreshSecret));
     }
 
     // Phương thức validate Access Token

@@ -1,13 +1,25 @@
 package com.example.bookstore.dto;
 
+import java.util.Date;
+
 public class AuthResponse {
     private String accessToken;
     private String refreshToken;
     private String error;
     private String role;
+    private Date accessTokenExpirationDate;  // Thời điểm hết hạn của access token
+    private Date refreshTokenExpirationDate; // Thời điểm hết hạn của refresh token
 
     // Constructors
     public AuthResponse() {}
+
+    public AuthResponse(String accessToken, String refreshToken, String role, Date accessTokenExpirationDate, Date refreshTokenExpirationDate) {
+        this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
+        this.role = role;
+        this.accessTokenExpirationDate = accessTokenExpirationDate;
+        this.refreshTokenExpirationDate = refreshTokenExpirationDate;
+    }
 
     public AuthResponse(String accessToken, String refreshToken, String role) {
         this.accessToken = accessToken;
@@ -47,5 +59,21 @@ public class AuthResponse {
 
     public void setError(String error) {
         this.error = error;
+    }
+
+    public Date getAccessTokenExpirationDate() {
+        return accessTokenExpirationDate;
+    }
+
+    public void setAccessTokenExpirationDate(Date accessTokenExpirationDate) {
+        this.accessTokenExpirationDate = accessTokenExpirationDate;
+    }
+
+    public Date getRefreshTokenExpirationDate() {
+        return refreshTokenExpirationDate;
+    }
+
+    public void setRefreshTokenExpirationDate(Date refreshTokenExpirationDate) {
+        this.refreshTokenExpirationDate = refreshTokenExpirationDate;
     }
 }

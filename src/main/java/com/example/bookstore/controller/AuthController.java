@@ -55,9 +55,17 @@ public class AuthController {
             String refreshToken = jwtService.generateRefreshToken(userDetails);
             String role = userDetails.getRole();
 
-            return ResponseEntity.ok(new AuthResponse(accessToken, refreshToken, role));
+            return ResponseEntity.ok(new AuthResponse(
+                accessToken, 
+                refreshToken, 
+                role,
+                jwtService.getAccessTokenExpiration(accessToken),
+                jwtService.getRefreshTokenExpiration(refreshToken)
+            ));
         } catch (Exception e) {
-            return ResponseEntity.status(401).body(new AuthResponse("", "", "Invalid credentials"));
+            AuthResponse errorResponse = new AuthResponse();
+            errorResponse.setError("Tên đăng nhập hoặc mật khẩu không đúng");
+            return ResponseEntity.status(401).body(errorResponse);
         }
     }
 
@@ -92,7 +100,9 @@ public class AuthController {
         String refreshToken = requestMap.get("refreshToken");
         
         if (refreshToken == null || refreshToken.isEmpty()) {
-            return ResponseEntity.status(400).body(new AuthResponse("", "", "Refresh token không được cung cấp"));
+            AuthResponse errorResponse = new AuthResponse();
+            errorResponse.setError("Refresh token không được cung cấp");
+            return ResponseEntity.status(400).body(errorResponse);
         }
         
         try {
@@ -106,13 +116,17 @@ public class AuthController {
             } catch (Exception e) {
                 System.out.println("Lỗi khi giải mã refresh token: " + e.getMessage());
                 e.printStackTrace();
-                return ResponseEntity.status(401).body(new AuthResponse("", "", "Invalid refresh token"));
+                AuthResponse errorResponse = new AuthResponse();
+                errorResponse.setError("Refresh token không hợp lệ");
+                return ResponseEntity.status(401).body(errorResponse);
             }
 
             // Kiểm tra xem người dùng tồn tại không
             Optional<User> userOptional = userRepository.findByUsername(username);
             if (userOptional.isEmpty()) {
-                return ResponseEntity.status(401).body(new AuthResponse("", "", "Không tìm thấy người dùng"));
+                AuthResponse errorResponse = new AuthResponse();
+                errorResponse.setError("Không tìm thấy người dùng");
+                return ResponseEntity.status(401).body(errorResponse);
             }
 
             UserDetailsImpl userDetails = new UserDetailsImpl(userOptional.get());
@@ -121,14 +135,24 @@ public class AuthController {
             if (jwtService.validateRefreshToken(refreshToken, userDetails)) {
                 // Tạo access token mới
                 String newAccessToken = jwtService.generateAccessToken(userDetails);
-                return ResponseEntity.ok(new AuthResponse(newAccessToken, refreshToken, userDetails.getRole()));
+                return ResponseEntity.ok(new AuthResponse(
+                    newAccessToken, 
+                    refreshToken, 
+                    userDetails.getRole(),
+                    jwtService.getAccessTokenExpiration(newAccessToken),
+                    jwtService.getRefreshTokenExpiration(refreshToken)
+                ));
             } else {
-                return ResponseEntity.status(401).body(new AuthResponse("", "", "Refresh token không hợp lệ hoặc đã hết hạn"));
+                AuthResponse errorResponse = new AuthResponse();
+                errorResponse.setError("Refresh token không hợp lệ hoặc đã hết hạn");
+                return ResponseEntity.status(401).body(errorResponse);
             }
         } catch (Exception e) {
             System.out.println("Lỗi tổng thể: " + e.getMessage());
             e.printStackTrace();
-            return ResponseEntity.status(500).body(new AuthResponse("", "", "Đã xảy ra lỗi: " + e.getMessage()));
+            AuthResponse errorResponse = new AuthResponse();
+            errorResponse.setError("Đã xảy ra lỗi: " + e.getMessage());
+            return ResponseEntity.status(500).body(errorResponse);
         }
     }
     // api check role
