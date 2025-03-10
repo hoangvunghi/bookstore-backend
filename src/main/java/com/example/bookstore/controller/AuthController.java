@@ -132,19 +132,19 @@ public class AuthController {
             UserDetailsImpl userDetails = new UserDetailsImpl(userOptional.get());
             
             // Xác thực refresh token
-            if (jwtService.validateRefreshToken(refreshToken, userDetails)) {
-                // Tạo access token mới
-                String newAccessToken = jwtService.generateAccessToken(userDetails);
-                return ResponseEntity.ok(new AuthResponse(
-                    newAccessToken, 
-                    refreshToken, 
-                    userDetails.getRole(),
-                    jwtService.getAccessTokenExpiration(newAccessToken),
-                    jwtService.getRefreshTokenExpiration(refreshToken)
-                ));
-            } else {
-                AuthResponse errorResponse = new AuthResponse();
-                errorResponse.setError("Refresh token không hợp lệ hoặc đã hết hạn");
+                if (jwtService.validateRefreshToken(refreshToken, userDetails)) {
+                    // Tạo access token mới
+                    String newAccessToken = jwtService.generateAccessToken(userDetails);
+                    return ResponseEntity.ok(new AuthResponse(
+                        newAccessToken, 
+                        refreshToken, 
+                        userDetails.getRole(),
+                        jwtService.getAccessTokenExpiration(newAccessToken),
+                        jwtService.getRefreshTokenExpiration(refreshToken)
+                    ));
+                } else {
+                    AuthResponse errorResponse = new AuthResponse();
+                    errorResponse.setError("Refresh token không hợp lệ hoặc đã hết hạn");
                 return ResponseEntity.status(401).body(errorResponse);
             }
         } catch (Exception e) {
