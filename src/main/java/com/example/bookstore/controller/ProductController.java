@@ -1,5 +1,6 @@
 package com.example.bookstore.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,7 +97,28 @@ public class ProductController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> createProduct(@RequestBody ProductDTO productDTO) {
         try {
+            System.out.println("Bắt đầu tạo sản phẩm mới");
             System.out.println("productID: " + productDTO.getProductId());
+            
+            // In ra thông tin về danh sách ảnh
+            System.out.println("Số lượng ảnh nhận được: " + 
+                (productDTO.getImageUrls() != null ? productDTO.getImageUrls().size() : 0));
+            if (productDTO.getImageUrls() != null) {
+                for (int i = 0; i < productDTO.getImageUrls().size(); i++) {
+                    String imageData = productDTO.getImageUrls().get(i);
+                    System.out.println("Ảnh thứ " + (i + 1) + ":");
+                    if (imageData != null) {
+                        System.out.println("- Độ dài dữ liệu: " + imageData.length());
+                        System.out.println("- 100 ký tự đầu tiên: " + 
+                            (imageData.length() > 100 ? imageData.substring(0, 100) + "..." : imageData));
+                        System.out.println("- Có phải base64 không: " + 
+                            (imageData.startsWith("data:image") || imageData.startsWith("data:application")));
+                    } else {
+                        System.out.println("- Dữ liệu null");
+                    }
+                }
+            }
+
             if (productDTO.getProductId() != null && productDTO.getProductId() > 0) {
                 return ResponseEntity.badRequest()
                     .body(new ApiResponse(false, 
@@ -130,9 +152,46 @@ public class ProductController {
                     .body(new ApiResponse(false, "Năm xuất bản không hợp lệ", null));
             }
             
+            // Xử lý hình ảnh base64 trước khi tạo sản phẩm
+            List<String> processedImageUrls = new ArrayList<>();
+            if (productDTO.getImageUrls() != null && !productDTO.getImageUrls().isEmpty()) {
+                System.out.println("Bắt đầu xử lý " + productDTO.getImageUrls().size() + " ảnh");
+                for (String imageData : productDTO.getImageUrls()) {
+                    try {
+                        // Kiểm tra xem có phải là base64 không
+                        if (imageData != null && !imageData.trim().isEmpty()) {
+                            System.out.println("Đang xử lý ảnh với độ dài: " + imageData.length());
+                            if (imageData.startsWith("data:image") || imageData.startsWith("data:application")) {
+                                System.out.println("Phát hiện ảnh base64, đang tải lên Cloudinary");
+                                // Nếu là base64, tải lên Cloudinary
+                                String imageUrl = productImageService.addProductImage(null, imageData).getImageURL();
+                                System.out.println("Đã tải lên thành công, URL: " + imageUrl);
+                                processedImageUrls.add(imageUrl);
+                            } else {
+                                System.out.println("Không phải base64, giữ nguyên URL");
+                                // Nếu không phải base64, giữ nguyên URL
+                                processedImageUrls.add(imageData);
+                            }
+                        } else {
+                            System.out.println("Bỏ qua ảnh rỗng hoặc null");
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Lỗi xử lý hình ảnh: " + e.getMessage());
+                        e.printStackTrace();
+                        // Nếu có lỗi, bỏ qua hình ảnh này
+                    }
+                }
+                System.out.println("Đã xử lý xong " + processedImageUrls.size() + " ảnh");
+                // Cập nhật danh sách hình ảnh đã xử lý
+                productDTO.setImageUrls(processedImageUrls);
+            }
+            
             ProductDTO createdProduct = productService.createProduct(productDTO);
+            System.out.println("Đã tạo sản phẩm thành công với ID: " + createdProduct.getProductId());
             return ResponseEntity.ok(new ApiResponse(true, "Tạo sản phẩm thành công", createdProduct));
         } catch (Exception e) {
+            System.err.println("Lỗi khi tạo sản phẩm: " + e.getMessage());
+            e.printStackTrace();
             String errorMessage = e.getMessage();
             
             if (errorMessage != null && errorMessage.contains("Row was updated or deleted by another transaction")) {
@@ -191,6 +250,31 @@ public class ProductController {
             if (productDTO.getPublicationYear() < 0 || productDTO.getPublicationYear() > 9999) {
                 return ResponseEntity.badRequest()
                     .body(new ApiResponse(false, "Năm xuất bản không hợp lệ", null));
+            }
+            
+            // Xử lý hình ảnh base64 trước khi cập nhật sản phẩm
+            List<String> processedImageUrls = new ArrayList<>();
+            if (productDTO.getImageUrls() != null && !productDTO.getImageUrls().isEmpty()) {
+                for (String imageData : productDTO.getImageUrls()) {
+                    try {
+                        // Kiểm tra xem có phải là base64 không
+                        if (imageData != null && !imageData.trim().isEmpty()) {
+                            if (imageData.startsWith("data:image") || imageData.startsWith("data:application")) {
+                                // Nếu là base64, tải lên Cloudinary
+                                String imageUrl = productImageService.addProductImage(id, imageData).getImageURL();
+                                processedImageUrls.add(imageUrl);
+                            } else {
+                                // Nếu không phải base64, giữ nguyên URL
+                                processedImageUrls.add(imageData);
+                            }
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Lỗi xử lý hình ảnh: " + e.getMessage());
+                        // Nếu có lỗi, bỏ qua hình ảnh này
+                    }
+                }
+                // Cập nhật danh sách hình ảnh đã xử lý
+                productDTO.setImageUrls(processedImageUrls);
             }
             
             ProductDTO updatedProduct = productService.updateProduct(id, productDTO);

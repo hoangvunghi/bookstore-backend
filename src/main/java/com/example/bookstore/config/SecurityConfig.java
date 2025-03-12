@@ -59,6 +59,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/product-categories/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/images/**").permitAll() // Cho phép truy cập hình ảnh
                 .anyRequest().authenticated() // Các request khác phải xác thực
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Không dùng session

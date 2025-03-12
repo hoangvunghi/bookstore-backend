@@ -21,7 +21,7 @@ public class ProductImage {
     private Product product;
 
     @Column(columnDefinition = "TEXT")
-    private String imageURL;  // Base64 encoded image
+    private String imageURL;  
 
     // Getters, setters, constructors
     public ProductImage() {}
