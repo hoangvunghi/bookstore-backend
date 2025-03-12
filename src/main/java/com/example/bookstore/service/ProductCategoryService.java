@@ -10,6 +10,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.example.bookstore.dto.ProductCategoryDTO;
+import com.example.bookstore.model.Category;
+import com.example.bookstore.model.Product;
 import com.example.bookstore.model.ProductCategory;
 import com.example.bookstore.repository.CategoryRepository;
 import com.example.bookstore.repository.ProductCategoryRepository;
@@ -44,26 +46,40 @@ public class ProductCategoryService {
     }
 
     public ProductCategoryDTO createProductCategory(ProductCategoryDTO productCategoryDTO) {
+        // Kiểm tra xem liên kết này đã tồn tại chưa
+        Product product = productRepository.findById(productCategoryDTO.getProductId()).orElse(null);
+        Category category = categoryRepository.findById(productCategoryDTO.getCategoryId()).orElse(null);
+        
+        if (product == null || category == null) {
+            return null;
+        }
+        
+        // Kiểm tra xem liên kết này đã tồn tại chưa
+        Optional<ProductCategory> existingLink = productCategoryRepository.findByProductAndCategory(product, category);
+        if (existingLink.isPresent()) {
+            // Nếu đã tồn tại, trả về DTO của liên kết đó
+            return convertToDTO(existingLink.get());
+        }
+        
+        // Nếu chưa tồn tại, tạo mới
         ProductCategory productCategory = convertToEntity(productCategoryDTO);
         ProductCategory savedProductCategory = productCategoryRepository.save(productCategory);
         return convertToDTO(savedProductCategory);
     }
 
-    public ProductCategoryDTO updateProductCategory(Long id, ProductCategoryDTO productCategoryDTO) {
-        if (productCategoryRepository.existsById(id)) {
-            ProductCategory productCategory = convertToEntity(productCategoryDTO);
-            productCategory.setProductCategoryId(id);
-            ProductCategory updatedProductCategory = productCategoryRepository.save(productCategory);
-            return convertToDTO(updatedProductCategory);
+    public boolean deleteProductCategory(Long productId, Long categoryId) {
+        Product product = productRepository.findById(productId).orElse(null);
+        Category category = categoryRepository.findById(categoryId).orElse(null);
+        
+        if (product == null || category == null) {
+            return false;
         }
-        return null;
-    }
-
-    public boolean deleteProductCategory(Long id) {
-        if (productCategoryRepository.existsById(id)) {
-            productCategoryRepository.deleteById(id);
+        
+        Optional<ProductCategory> productCategory = productCategoryRepository.findByProductAndCategory(product, category);
+        if (productCategory.isPresent()) {
+            productCategoryRepository.delete(productCategory.get());
             return true;
-        }
+        }   
         return false;
     }
 
@@ -77,9 +93,15 @@ public class ProductCategoryService {
 
     private ProductCategory convertToEntity(ProductCategoryDTO dto) {
         ProductCategory productCategory = new ProductCategory();
-        productCategory.setProductCategoryId(dto.getProductCategoryId());
-        productCategory.setProduct(productRepository.findById(dto.getProductId()).orElse(null));
-        productCategory.setCategory(categoryRepository.findById(dto.getCategoryId()).orElse(null));
+        
+        Product product = productRepository.findById(dto.getProductId()).orElse(null);
+        Category category = categoryRepository.findById(dto.getCategoryId()).orElse(null);
+        
+        if (product != null && category != null) {
+            productCategory.setProduct(product);
+            productCategory.setCategory(category);
+        }
+        
         return productCategory;
     }
 } 

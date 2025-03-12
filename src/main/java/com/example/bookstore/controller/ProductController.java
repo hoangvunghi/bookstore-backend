@@ -96,6 +96,7 @@ public class ProductController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> createProduct(@RequestBody ProductDTO productDTO) {
         try {
+            System.out.println("productID: " + productDTO.getProductId());
             if (productDTO.getProductId() != null && productDTO.getProductId() > 0) {
                 return ResponseEntity.badRequest()
                     .body(new ApiResponse(false, 
@@ -145,8 +146,8 @@ public class ProductController {
             if (errorMessage != null && errorMessage.contains("duplicate key value violates unique constraint \"productcategory_pkey\"")) {
                 return ResponseEntity.badRequest()
                     .body(new ApiResponse(false, 
-                        "Không thể liên kết sản phẩm với danh mục. Danh mục đã được liên kết với sản phẩm khác. " +
-                        "Vui lòng kiểm tra lại danh sách categoryIds hoặc liên hệ quản trị viên để được hỗ trợ.", null));
+                        "Lỗi khi liên kết sản phẩm với danh mục. Có thể có vấn đề với khóa chính trong bảng liên kết. " +
+                        "Vui lòng liên hệ quản trị viên để được hỗ trợ.", null));
             }
             
             if (errorMessage != null && errorMessage.contains("violates foreign key constraint")) {

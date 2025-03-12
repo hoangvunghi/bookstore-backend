@@ -49,7 +49,7 @@ public class Product {
     @JoinTable(
         name = "productcategory",
         joinColumns = @JoinColumn(name = "productId"),
-        inverseJoinColumns = @JoinColumn(name = "productCategoryId")
+        inverseJoinColumns = @JoinColumn(name = "categoryId")
     )
     private List<Category> categories;
 

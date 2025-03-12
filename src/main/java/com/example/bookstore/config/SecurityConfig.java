@@ -10,11 +10,14 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import com.example.bookstore.security.JwtAuthenticationFilter;
 import com.example.bookstore.security.UserDetailsServiceImpl;
+
+import io.swagger.v3.oas.models.PathItem;
 
 @Configuration
 @EnableMethodSecurity
@@ -53,12 +56,14 @@ public class SecurityConfig {
                 .requestMatchers(new AntPathRequestMatcher("/api/password/reset/validate")).permitAll() // Cho phép API validate token
                 .requestMatchers(new AntPathRequestMatcher("/api/password/reset")).permitAll() // Cho phép API đặt lại mật khẩu
                 .requestMatchers(new AntPathRequestMatcher("/api/admin/**")).hasRole("ADMIN")
-
+                .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/product-categories/**").permitAll()
                 .anyRequest().authenticated() // Các request khác phải xác thực
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Không dùng session
             .csrf(csrf -> csrf.disable()) // Tắt CSRF (vì API REST không cần)
-            .cors() // Bật CORS và sử dụng CorsFilter đã được cấu hình
+            .cors()
             .and()
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
              

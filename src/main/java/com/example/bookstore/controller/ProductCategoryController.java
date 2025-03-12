@@ -12,11 +12,11 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.bookstore.dto.ApiResponse;
 import com.example.bookstore.dto.ProductCategoryDTO;
 import com.example.bookstore.service.ProductCategoryService;
 
@@ -41,39 +41,32 @@ public class ProductCategoryController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProductCategoryDTO> getProductCategoryById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse> getProductCategoryById(@PathVariable Long id) {
         ProductCategoryDTO productCategory = productCategoryService.getProductCategoryById(id);
         if (productCategory != null) {
-            return ResponseEntity.ok(productCategory);
+            return ResponseEntity.ok(new ApiResponse(true, "Lấy thông tin liên kết sản phẩm-danh mục thành công", productCategory));
         }
         return ResponseEntity.notFound().build();
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ProductCategoryDTO> createProductCategory(@RequestBody ProductCategoryDTO productCategoryDTO) {
+    public ResponseEntity<ApiResponse> createProductCategory(@RequestBody ProductCategoryDTO productCategoryDTO) {
         ProductCategoryDTO createdProductCategory = productCategoryService.createProductCategory(productCategoryDTO);
-        return ResponseEntity.ok(createdProductCategory);
-    }
-
-    @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ProductCategoryDTO> updateProductCategory(
-            @PathVariable Long id,
-            @RequestBody ProductCategoryDTO productCategoryDTO) {
-        ProductCategoryDTO updatedProductCategory = productCategoryService.updateProductCategory(id, productCategoryDTO);
-        if (updatedProductCategory != null) {
-            return ResponseEntity.ok(updatedProductCategory);
+        if (createdProductCategory != null) {
+            return ResponseEntity.ok(new ApiResponse(true, "Tạo liên kết sản phẩm-danh mục thành công", createdProductCategory));
         }
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.badRequest().body(new ApiResponse(false, "Không thể tạo liên kết sản phẩm-danh mục", null));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/product/{productId}/category/{categoryId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteProductCategory(@PathVariable Long id) {
-        boolean deleted = productCategoryService.deleteProductCategory(id);
+    public ResponseEntity<ApiResponse> deleteProductCategory(
+            @PathVariable Long productId,
+            @PathVariable Long categoryId) {
+        boolean deleted = productCategoryService.deleteProductCategory(productId, categoryId);
         if (deleted) {
-            return ResponseEntity.ok().build();
+            return ResponseEntity.ok(new ApiResponse(true, "Xóa liên kết sản phẩm-danh mục thành công", null));
         }
         return ResponseEntity.notFound().build();
     }
