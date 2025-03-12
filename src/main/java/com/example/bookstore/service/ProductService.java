@@ -34,12 +34,12 @@ public class ProductService {
 
     // Phương thức lấy tất cả sản phẩm có phân trang
     public Page<ProductDTO> getAllProducts(Pageable pageable) {
-        return productRepository.findAll(pageable).map(this::convertToDTO);
+        return productRepository.findByIsActiveTrue(pageable).map(this::convertToDTO);
     }
 
     // Phương thức lấy sản phẩm theo ID
     public ProductDTO getProductById(Long id) {
-        Optional<Product> product = productRepository.findById(id);
+        Optional<Product> product = productRepository.findByProductIdAndIsActiveTrue(id);
         return product.map(this::convertToDTO).orElse(null);
     }
 
@@ -47,6 +47,7 @@ public class ProductService {
     @Transactional
     public ProductDTO createProduct(ProductDTO productDTO) {
         Product product = convertToEntity(productDTO);
+        product.setActive(true);  // Đảm bảo sản phẩm mới luôn active
         Product savedProduct = productRepository.save(product);
         
         // Lưu hình ảnh sản phẩm
@@ -86,11 +87,14 @@ public class ProductService {
         return null;
     }
 
-    // Phương thức xóa sản phẩm
+    // Phương thức xóa sản phẩm (soft delete)
     @Transactional
     public boolean deleteProduct(Long id) {
-        if (productRepository.existsById(id)) {
-            productRepository.deleteById(id);
+        Optional<Product> productOpt = productRepository.findById(id);
+        if (productOpt.isPresent()) {
+            Product product = productOpt.get();
+            product.setActive(false);  // Soft delete
+            productRepository.save(product);
             return true;
         }
         return false;
@@ -98,17 +102,17 @@ public class ProductService {
 
     // Các phương thức tìm kiếm
     public Page<ProductDTO> searchByName(String name, Pageable pageable) {
-        return productRepository.findByNameContainingIgnoreCase(name, pageable)
+        return productRepository.findByNameContainingIgnoreCaseAndIsActiveTrue(name, pageable)
                 .map(this::convertToDTO);
     }
 
     public Page<ProductDTO> searchByAuthor(String author, Pageable pageable) {
-        return productRepository.findByAuthorContainingIgnoreCase(author, pageable)
+        return productRepository.findByAuthorContainingIgnoreCaseAndIsActiveTrue(author, pageable)
                 .map(this::convertToDTO);
     }
 
     public Page<ProductDTO> searchByPublisher(String publisher, Pageable pageable) {
-        return productRepository.findByPublisherContainingIgnoreCase(publisher, pageable)
+        return productRepository.findByPublisherContainingIgnoreCaseAndIsActiveTrue(publisher, pageable)
                 .map(this::convertToDTO);
     }
 
@@ -168,7 +172,7 @@ public class ProductService {
     }
 
     public Page<ProductDTO> getTopSellingProducts(Pageable pageable) {
-        return productRepository.findAllByOrderBySoldCountDesc(pageable)
+        return productRepository.findTopSellingProducts(pageable)
                 .map(this::convertToDTO);
     }
 
@@ -188,6 +192,7 @@ public class ProductService {
         dto.setPageCount(product.getPageCount());
         dto.setISBN(product.getISBN());
         dto.setSoldCount(product.getSoldCount());
+        dto.setActive(product.isActive());  // Thêm trường isActive vào DTO
         
         // Chuyển đổi danh sách category IDs
         if (product.getCategories() != null) {
@@ -196,7 +201,7 @@ public class ProductService {
                     .collect(Collectors.toList()));
         }
         
-        // Chuyển đổi danh sách URLs hình ảnh
+        // Chuyển đổi danh sách image URLs
         if (product.getProductImages() != null) {
             dto.setImageUrls(product.getProductImages().stream()
                     .map(ProductImage::getImageURL)
@@ -219,7 +224,9 @@ public class ProductService {
     // Phương thức chuyển đổi DTO sang Entity
     private Product convertToEntity(ProductDTO dto) {
         Product product = new Product();
-        product.setProductId(dto.getProductId());
+        if (dto.getProductId() != null) {
+            product.setProductId(dto.getProductId());
+        }
         product.setName(dto.getName());
         product.setDescription(dto.getDescription());
         product.setPrice(dto.getPrice());
@@ -232,6 +239,7 @@ public class ProductService {
         product.setPageCount(dto.getPageCount());
         product.setISBN(dto.getISBN());
         product.setSoldCount(dto.getSoldCount());
+        product.setActive(true);  // Mặc định là active khi tạo mới
         
         // Chuyển đổi danh sách categories
         if (dto.getCategoryIds() != null) {

@@ -20,6 +20,7 @@ public class ProductDTO {
     private List<String> imageUrls;
     private double averageRating;
     private int reviewCount;
+    private boolean isActive;
 
     public ProductDTO() {}
 
@@ -58,4 +59,6 @@ public class ProductDTO {
     public void setAverageRating(double averageRating) { this.averageRating = averageRating; }
     public int getReviewCount() { return reviewCount; }
     public void setReviewCount(int reviewCount) { this.reviewCount = reviewCount; }
+    public boolean isActive() { return isActive; }
+    public void setActive(boolean isActive) { this.isActive = isActive; }
 } 

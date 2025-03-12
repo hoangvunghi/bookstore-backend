@@ -39,6 +39,9 @@ public class Product {
     private String ISBN;
     private int soldCount;
 
+    @Column(name = "is_active", columnDefinition = "BOOLEAN DEFAULT true")
+    private boolean isActive = true;
+
     @OneToMany(mappedBy = "product")
     private List<Review> reviews;
 
@@ -96,6 +99,8 @@ public class Product {
     public void setOrderDetails(List<OrderDetail> orderDetails) { this.orderDetails = orderDetails; }
     public List<Category> getCategories() { return categories; }
     public void setCategories(List<Category> categories) { this.categories = categories; }
+    public boolean isActive() { return isActive; }
+    public void setActive(boolean isActive) { this.isActive = isActive; }
     public List<ProductImage> getProductImages() { return productImages; }
     public void setProductImages(List<ProductImage> productImages) { this.productImages = productImages; }
 }

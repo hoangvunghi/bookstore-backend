@@ -1,5 +1,7 @@
 package com.example.bookstore.repository;
 
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,6 +13,13 @@ import com.example.bookstore.model.Product;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
+    // Tìm kiếm cơ bản
+    Page<Product> findByIsActiveTrue(Pageable pageable);
+    Optional<Product> findByProductIdAndIsActiveTrue(Long id);
+    Page<Product> findByNameContainingIgnoreCaseAndIsActiveTrue(String name, Pageable pageable);
+    Page<Product> findByAuthorContainingIgnoreCaseAndIsActiveTrue(String author, Pageable pageable);
+    Page<Product> findByPublisherContainingIgnoreCaseAndIsActiveTrue(String publisher, Pageable pageable);
+    
     // Tìm kiếm theo tên sách (không phân biệt hoa thường)
     Page<Product> findByNameContainingIgnoreCase(String name, Pageable pageable);
     
@@ -33,10 +42,11 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT DISTINCT p FROM Product p JOIN p.categories c WHERE c.categoryId = :categoryId")
     Page<Product> findByCategoryId(@Param("categoryId") Long categoryId, Pageable pageable);
     
-    // Tìm kiếm nâng cao kết hợp nhiều tiêu chí
+    // Tìm kiếm nâng cao
     @Query(value = "SELECT DISTINCT p.* FROM products p " +
                    "LEFT JOIN productcategory pc ON p.product_id = pc.product_id " +
-                   "WHERE (:name IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))) " +
+                   "WHERE p.is_active = true " +
+                   "AND (:name IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))) " +
                    "AND (:author IS NULL OR LOWER(p.author) LIKE LOWER(CONCAT('%', :author, '%'))) " +
                    "AND (:publisher IS NULL OR LOWER(p.publisher) LIKE LOWER(CONCAT('%', :publisher, '%'))) " +
                    "AND (:minPrice IS NULL OR p.price >= :minPrice) " +
@@ -45,7 +55,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                    "AND (:categoryId IS NULL OR pc.category_id = :categoryId)",
            countQuery = "SELECT COUNT(DISTINCT p.product_id) FROM products p " +
                         "LEFT JOIN productcategory pc ON p.product_id = pc.product_id " +
-                        "WHERE (:name IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))) " +
+                        "WHERE p.is_active = true " +
+                        "AND (:name IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))) " +
                         "AND (:author IS NULL OR LOWER(p.author) LIKE LOWER(CONCAT('%', :author, '%'))) " +
                         "AND (:publisher IS NULL OR LOWER(p.publisher) LIKE LOWER(CONCAT('%', :publisher, '%'))) " +
                         "AND (:minPrice IS NULL OR p.price >= :minPrice) " +
@@ -75,6 +86,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     // Lấy sách bán chạy (theo số lượng đã bán)
     Page<Product> findBySoldCountGreaterThanOrderBySoldCountDesc(int minSold, Pageable pageable);
     
-    // Lấy top sách bán chạy nhất
-    Page<Product> findAllByOrderBySoldCountDesc(Pageable pageable);
+    // Top selling products
+    @Query("SELECT p FROM Product p WHERE p.isActive = true ORDER BY p.soldCount DESC")
+    Page<Product> findTopSellingProducts(Pageable pageable);
 }
