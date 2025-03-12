@@ -20,16 +20,19 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long productId;
 
+    @Column(name = "name", columnDefinition = "VARCHAR(255)")
     private String name;
     
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
     
     private int price;
     private int stockQuantity;
     private int discount;
     private int realPrice;
+    @Column(name = "author", columnDefinition = "VARCHAR(255)")
     private String author;
+    @Column(name = "publisher", columnDefinition = "VARCHAR(255)")
     private String publisher;
     private int publicationYear;
     private int pageCount;

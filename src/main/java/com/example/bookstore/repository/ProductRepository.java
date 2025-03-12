@@ -34,15 +34,25 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findByCategoryId(@Param("categoryId") Long categoryId, Pageable pageable);
     
     // Tìm kiếm nâng cao kết hợp nhiều tiêu chí
-    @Query("SELECT DISTINCT p FROM Product p " +
-           "LEFT JOIN p.categories c " +
-           "WHERE (:name IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))) " +
-           "AND (:author IS NULL OR LOWER(p.author) LIKE LOWER(CONCAT('%', :author, '%'))) " +
-           "AND (:publisher IS NULL OR LOWER(p.publisher) LIKE LOWER(CONCAT('%', :publisher, '%'))) " +
-           "AND (:minPrice IS NULL OR p.price >= :minPrice) " +
-           "AND (:maxPrice IS NULL OR p.price <= :maxPrice) " +
-           "AND (:year IS NULL OR p.publicationYear = :year) " +
-           "AND (:categoryId IS NULL OR c.categoryId = :categoryId)")
+    @Query(value = "SELECT DISTINCT p.* FROM products p " +
+                   "LEFT JOIN productcategory pc ON p.product_id = pc.product_id " +
+                   "WHERE (:name IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))) " +
+                   "AND (:author IS NULL OR LOWER(p.author) LIKE LOWER(CONCAT('%', :author, '%'))) " +
+                   "AND (:publisher IS NULL OR LOWER(p.publisher) LIKE LOWER(CONCAT('%', :publisher, '%'))) " +
+                   "AND (:minPrice IS NULL OR p.price >= :minPrice) " +
+                   "AND (:maxPrice IS NULL OR p.price <= :maxPrice) " +
+                   "AND (:year IS NULL OR p.publication_year = :year) " +
+                   "AND (:categoryId IS NULL OR pc.category_id = :categoryId)",
+           countQuery = "SELECT COUNT(DISTINCT p.product_id) FROM products p " +
+                        "LEFT JOIN productcategory pc ON p.product_id = pc.product_id " +
+                        "WHERE (:name IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))) " +
+                        "AND (:author IS NULL OR LOWER(p.author) LIKE LOWER(CONCAT('%', :author, '%'))) " +
+                        "AND (:publisher IS NULL OR LOWER(p.publisher) LIKE LOWER(CONCAT('%', :publisher, '%'))) " +
+                        "AND (:minPrice IS NULL OR p.price >= :minPrice) " +
+                        "AND (:maxPrice IS NULL OR p.price <= :maxPrice) " +
+                        "AND (:year IS NULL OR p.publication_year = :year) " +
+                        "AND (:categoryId IS NULL OR pc.category_id = :categoryId)",
+           nativeQuery = true)
     Page<Product> searchProducts(
             @Param("name") String name,
             @Param("author") String author,
