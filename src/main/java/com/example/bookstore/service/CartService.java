@@ -61,7 +61,12 @@ public class CartService {
         dto.setCartId(detail.getCart().getCartId());
         dto.setProductId(detail.getProduct().getProductId());
         dto.setProductName(detail.getProduct().getName());
-        dto.setPrice(detail.getProduct().getPrice());
+        
+        // Thêm thông tin giá
+        dto.setOriginalPrice(detail.getProduct().getPrice());
+        dto.setDiscount(detail.getProduct().getDiscount());
+        dto.setDiscountedPrice(detail.getProduct().getRealPrice());
+        
         dto.setQuantity(detail.getQuantity());
         
         // Thêm URL ảnh đầu tiên của sản phẩm

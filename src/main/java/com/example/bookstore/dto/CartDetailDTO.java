@@ -5,7 +5,9 @@ public class CartDetailDTO {
     private Long cartId;
     private Long productId;
     private String productName;
-    private int price;
+    private int originalPrice;  // Giá gốc
+    private int discountedPrice; // Giá sau khuyến mãi
+    private int discount;       // Phần trăm giảm giá
     private int quantity;
     private int subtotal;
     private String productImageUrl;
@@ -14,6 +16,31 @@ public class CartDetailDTO {
     public CartDetailDTO() {}
 
     // Getters and Setters
+    public int getOriginalPrice() {
+        return originalPrice;
+    }
+
+    public void setOriginalPrice(int originalPrice) {
+        this.originalPrice = originalPrice;
+    }
+
+    public int getDiscountedPrice() {
+        return discountedPrice;
+    }
+
+    public void setDiscountedPrice(int discountedPrice) {
+        this.discountedPrice = discountedPrice;
+        calculateSubtotal();
+    }
+
+    public int getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(int discount) {
+        this.discount = discount;
+    }
+
     public String getProductImageUrl() {
         return productImageUrl;
     }
@@ -55,11 +82,11 @@ public class CartDetailDTO {
     }
 
     public int getPrice() {
-        return price;
+        return discountedPrice; // Để tương thích ngược, price trả về giá sau khuyến mãi
     }
 
     public void setPrice(int price) {
-        this.price = price;
+        this.discountedPrice = price;
         calculateSubtotal();
     }
 
@@ -82,6 +109,6 @@ public class CartDetailDTO {
 
     // Helper method
     private void calculateSubtotal() {
-        this.subtotal = this.price * this.quantity;
+        this.subtotal = this.discountedPrice * this.quantity;
     }
 } 

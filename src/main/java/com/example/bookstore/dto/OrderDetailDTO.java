@@ -6,13 +6,39 @@ public class OrderDetailDTO {
     private Long productId;
     private String productName;
     private int quantity;
-    private int price;
+    private int originalPrice;  // Giá gốc
+    private int discountedPrice; // Giá sau khuyến mãi
+    private int discount;       // Phần trăm giảm giá
     private String productImageUrl;
 
     // Constructors
     public OrderDetailDTO() {}
 
     // Getters and Setters
+    public int getOriginalPrice() {
+        return originalPrice;
+    }
+
+    public void setOriginalPrice(int originalPrice) {
+        this.originalPrice = originalPrice;
+    }
+
+    public int getDiscountedPrice() {
+        return discountedPrice;
+    }
+
+    public void setDiscountedPrice(int discountedPrice) {
+        this.discountedPrice = discountedPrice;
+    }
+
+    public int getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(int discount) {
+        this.discount = discount;
+    }
+
     public Long getOrderDetailId() {
         return orderDetailId;
     }
@@ -46,11 +72,11 @@ public class OrderDetailDTO {
     }
 
     public int getPrice() {
-        return price;
+        return discountedPrice; // Để tương thích ngược, price trả về giá sau khuyến mãi
     }
 
     public void setPrice(int price) {
-        this.price = price;
+        this.discountedPrice = price;
     }
 
     public String getProductName() {

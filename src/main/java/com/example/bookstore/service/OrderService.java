@@ -67,7 +67,11 @@ public class OrderService {
         dto.setProductId(detail.getProduct().getProductId());
         dto.setProductName(detail.getProduct().getName());
         dto.setQuantity(detail.getQuantity());
-        dto.setPrice(detail.getPrice());
+        
+        // Thêm thông tin giá
+        dto.setOriginalPrice(detail.getProduct().getPrice());
+        dto.setDiscount(detail.getProduct().getDiscount());
+        dto.setDiscountedPrice(detail.getProduct().getRealPrice());
         
         // Thêm URL ảnh đầu tiên của sản phẩm
         String imageUrl = productService.getFirstProductImage(detail.getProduct().getProductId());
