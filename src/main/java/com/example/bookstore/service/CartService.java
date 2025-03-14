@@ -205,9 +205,16 @@ public class CartService {
             
             if (!detailsToRemove.isEmpty()) {
                 for (CartDetail detail : detailsToRemove) {
+                    // Quan trọng: Xóa khỏi danh sách trong cart trước
+                    cart.getCartDetails().remove(detail);
                     cartDetailRepository.delete(detail);
                 }
-                cart.calculateTotalAmount();
+                
+                // Cập nhật tổng tiền và lưu giỏ hàng
+                int totalAmount = cart.getCartDetails().stream()
+                        .mapToInt(detail -> detail.getProduct().getRealPrice() * detail.getQuantity())
+                        .sum();
+                cart.setTotalAmount(totalAmount);
                 cart = cartRepository.save(cart);
                 System.out.println("Đã xóa sản phẩm không tồn tại khỏi giỏ hàng");
             }
@@ -221,10 +228,19 @@ public class CartService {
             return convertToDTO(cart);
         }
 
+        // Quan trọng: Xóa khỏi danh sách trong cart trước
+        cart.getCartDetails().remove(detail);
+        
         // Xóa sản phẩm khỏi giỏ hàng
         cartDetailRepository.delete(detail);
-        cart.calculateTotalAmount();
+        
+        // Cập nhật tổng tiền và lưu giỏ hàng
+        int totalAmount = cart.getCartDetails().stream()
+                .mapToInt(detail2 -> detail2.getProduct().getRealPrice() * detail2.getQuantity())
+                .sum();
+        cart.setTotalAmount(totalAmount);
         cart = cartRepository.save(cart);
+        
         System.out.println("Đã xóa sản phẩm " + productId + " khỏi giỏ hàng của người dùng " + userId);
 
         return convertToDTO(cart);
