@@ -46,6 +46,14 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
         try {
+            // Kiểm tra xem người dùng có bị vô hiệu hóa không trước khi xác thực
+            Optional<User> userOpt = userRepository.findByUsername(request.getUsername());
+            if (userOpt.isPresent() && !userOpt.get().isActive()) {
+                AuthResponse errorResponse = new AuthResponse();
+                errorResponse.setError("Tài khoản đã bị vô hiệu hóa");
+                return ResponseEntity.status(401).body(errorResponse);
+            }
+            
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
             );
@@ -128,23 +136,30 @@ public class AuthController {
                 errorResponse.setError("Không tìm thấy người dùng");
                 return ResponseEntity.status(401).body(errorResponse);
             }
+            
+            // Kiểm tra xem người dùng có bị vô hiệu hóa không
+            if (!userOptional.get().isActive()) {
+                AuthResponse errorResponse = new AuthResponse();
+                errorResponse.setError("Tài khoản đã bị vô hiệu hóa");
+                return ResponseEntity.status(401).body(errorResponse);
+            }
 
             UserDetailsImpl userDetails = new UserDetailsImpl(userOptional.get());
             
             // Xác thực refresh token
-                if (jwtService.validateRefreshToken(refreshToken, userDetails)) {
-                    // Tạo access token mới
-                    String newAccessToken = jwtService.generateAccessToken(userDetails);
-                    return ResponseEntity.ok(new AuthResponse(
-                        newAccessToken, 
-                        refreshToken, 
-                        userDetails.getRole(),
-                        jwtService.getAccessTokenExpiration(newAccessToken),
-                        jwtService.getRefreshTokenExpiration(refreshToken)
-                    ));
-                } else {
-                    AuthResponse errorResponse = new AuthResponse();
-                    errorResponse.setError("Refresh token không hợp lệ hoặc đã hết hạn");
+            if (jwtService.validateRefreshToken(refreshToken, userDetails)) {
+                // Tạo access token mới
+                String newAccessToken = jwtService.generateAccessToken(userDetails);
+                return ResponseEntity.ok(new AuthResponse(
+                    newAccessToken, 
+                    refreshToken, 
+                    userDetails.getRole(),
+                    jwtService.getAccessTokenExpiration(newAccessToken),
+                    jwtService.getRefreshTokenExpiration(refreshToken)
+                ));
+            } else {
+                AuthResponse errorResponse = new AuthResponse();
+                errorResponse.setError("Refresh token không hợp lệ hoặc đã hết hạn");
                 return ResponseEntity.status(401).body(errorResponse);
             }
         } catch (Exception e) {

@@ -99,6 +99,11 @@ public class JwtService {
     private boolean validateToken(String token, UserDetailsImpl userDetails, Key key) {
         try {
             String username = extractUsername(token, key);
+            // Kiểm tra xem người dùng có bị vô hiệu hóa không (isActive = false)
+            if (!userDetails.isEnabled()) {
+                System.out.println("Người dùng " + username + " đã bị vô hiệu hóa");
+                return false;
+            }
             return username.equals(userDetails.getUsername()) && !isTokenExpired(token, key);
         } catch (Exception e) {
             return false;
