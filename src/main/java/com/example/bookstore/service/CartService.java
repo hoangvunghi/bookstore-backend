@@ -174,23 +174,53 @@ public class CartService {
     // Xóa sản phẩm khỏi giỏ hàng
     @Transactional
     public CartDTO removeFromCart(Long userId, Long productId) {
+        // Kiểm tra user tồn tại
         User user = userRepository.findById(userId).orElse(null);
-        Product product = productRepository.findById(productId).orElse(null);
-        if (user == null || product == null) {
+        if (user == null) {
+            System.out.println("Không tìm thấy người dùng với ID: " + userId);
             return null;
         }
 
+        // Kiểm tra giỏ hàng tồn tại
         Cart cart = cartRepository.findByUser(user).orElse(null);
         if (cart == null) {
+            System.out.println("Không tìm thấy giỏ hàng cho người dùng: " + userId);
             return null;
         }
 
-        CartDetail detail = cartDetailRepository.findByCartAndProduct(cart, product).orElse(null);
-        if (detail != null) {
-            cartDetailRepository.delete(detail);
-            cart.calculateTotalAmount();
-            cart = cartRepository.save(cart);
+        // Kiểm tra sản phẩm tồn tại
+        Product product = productRepository.findById(productId).orElse(null);
+        if (product == null) {
+            System.out.println("Không tìm thấy sản phẩm với ID: " + productId);
+            // Nếu sản phẩm không tồn tại, vẫn xóa khỏi giỏ hàng nếu có
+            List<CartDetail> detailsToRemove = cart.getCartDetails().stream()
+                    .filter(detail -> detail.getProduct() != null && 
+                            detail.getProduct().getProductId().equals(productId))
+                    .collect(Collectors.toList());
+            
+            if (!detailsToRemove.isEmpty()) {
+                for (CartDetail detail : detailsToRemove) {
+                    cartDetailRepository.delete(detail);
+                }
+                cart.calculateTotalAmount();
+                cart = cartRepository.save(cart);
+                System.out.println("Đã xóa sản phẩm không tồn tại khỏi giỏ hàng");
+            }
+            return convertToDTO(cart);
         }
+
+        // Kiểm tra sản phẩm có trong giỏ hàng không
+        CartDetail detail = cartDetailRepository.findByCartAndProduct(cart, product).orElse(null);
+        if (detail == null) {
+            System.out.println("Sản phẩm " + productId + " không có trong giỏ hàng của người dùng " + userId);
+            return convertToDTO(cart);
+        }
+
+        // Xóa sản phẩm khỏi giỏ hàng
+        cartDetailRepository.delete(detail);
+        cart.calculateTotalAmount();
+        cart = cartRepository.save(cart);
+        System.out.println("Đã xóa sản phẩm " + productId + " khỏi giỏ hàng của người dùng " + userId);
 
         return convertToDTO(cart);
     }
