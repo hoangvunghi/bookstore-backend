@@ -28,15 +28,18 @@ public class OrderService {
     private final OrderDetailRepository orderDetailRepository;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
+    private final ProductService productService;
 
     public OrderService(OrderRepository orderRepository, 
                        OrderDetailRepository orderDetailRepository,
                        UserRepository userRepository,
-                       ProductRepository productRepository) {
+                       ProductRepository productRepository,
+                       ProductService productService) {
         this.orderRepository = orderRepository;
         this.orderDetailRepository = orderDetailRepository;
         this.userRepository = userRepository;
         this.productRepository = productRepository;
+        this.productService = productService;
     }
 
     // Chuyển đổi Order thành OrderDTO
@@ -62,8 +65,14 @@ public class OrderService {
         dto.setOrderDetailId(detail.getOrderDetailId());
         dto.setOrderId(detail.getOrder().getOrderId());
         dto.setProductId(detail.getProduct().getProductId());
+        dto.setProductName(detail.getProduct().getName());
         dto.setQuantity(detail.getQuantity());
         dto.setPrice(detail.getPrice());
+        
+        // Thêm URL ảnh đầu tiên của sản phẩm
+        String imageUrl = productService.getFirstProductImage(detail.getProduct().getProductId());
+        dto.setProductImageUrl(imageUrl);
+        
         return dto;
     }
 

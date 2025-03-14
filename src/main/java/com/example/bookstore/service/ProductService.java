@@ -176,6 +176,19 @@ public class ProductService {
                 .map(this::convertToDTO);
     }
 
+    // Phương thức lấy URL ảnh đầu tiên của sản phẩm
+    public String getFirstProductImage(Long productId) {
+        Product product = productRepository.findById(productId).orElse(null);
+        if (product == null || product.getProductImages() == null || product.getProductImages().isEmpty()) {
+            return null;
+        }
+        
+        return product.getProductImages().stream()
+                .findFirst()
+                .map(ProductImage::getImageURL)
+                .orElse(null);
+    }
+
     // Phương thức chuyển đổi Entity sang DTO
     private ProductDTO convertToDTO(Product product) {
         ProductDTO dto = new ProductDTO();

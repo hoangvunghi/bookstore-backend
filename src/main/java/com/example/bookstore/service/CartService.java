@@ -25,15 +25,18 @@ public class CartService {
     private final CartDetailRepository cartDetailRepository;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
+    private final ProductService productService;
 
     public CartService(CartRepository cartRepository,
                       CartDetailRepository cartDetailRepository,
                       UserRepository userRepository,
-                      ProductRepository productRepository) {
+                      ProductRepository productRepository,
+                      ProductService productService) {
         this.cartRepository = cartRepository;
         this.cartDetailRepository = cartDetailRepository;
         this.userRepository = userRepository;
         this.productRepository = productRepository;
+        this.productService = productService;
     }
 
     // Chuyển đổi Cart thành CartDTO
@@ -60,6 +63,11 @@ public class CartService {
         dto.setProductName(detail.getProduct().getName());
         dto.setPrice(detail.getProduct().getPrice());
         dto.setQuantity(detail.getQuantity());
+        
+        // Thêm URL ảnh đầu tiên của sản phẩm
+        String imageUrl = productService.getFirstProductImage(detail.getProduct().getProductId());
+        dto.setProductImageUrl(imageUrl);
+        
         return dto;
     }
 

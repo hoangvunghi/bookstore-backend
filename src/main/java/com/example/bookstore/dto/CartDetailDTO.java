@@ -8,11 +8,20 @@ public class CartDetailDTO {
     private int price;
     private int quantity;
     private int subtotal;
+    private String productImageUrl;
 
     // Constructors
     public CartDetailDTO() {}
 
     // Getters and Setters
+    public String getProductImageUrl() {
+        return productImageUrl;
+    }
+
+    public void setProductImageUrl(String productImageUrl) {
+        this.productImageUrl = productImageUrl;
+    }
+
     public Long getCartDetailId() {
         return cartDetailId;
     }
