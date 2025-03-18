@@ -1,12 +1,12 @@
 package com.example.bookstore.service;
 
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 
 @Service
 public class EmailService {
@@ -21,6 +21,25 @@ public class EmailService {
 
     public EmailService(JavaMailSender mailSender) {
         this.mailSender = mailSender;
+    }
+    
+    /**
+     * Gửi email thông thường
+     * @param to Địa chỉ email người nhận
+     * @param subject Tiêu đề email
+     * @param content Nội dung email (có thể là plain text)
+     * @throws MessagingException Nếu có lỗi khi gửi email
+     */
+    public void sendEmail(String to, String subject, String content) throws MessagingException {
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+        
+        helper.setFrom(senderEmail);
+        helper.setTo(to);
+        helper.setSubject(subject);
+        helper.setText(content, false); // false: nội dung là plain text
+        
+        mailSender.send(message);
     }
 
     public void sendPasswordResetEmail(String to, String token) throws MessagingException {

@@ -595,4 +595,13 @@ public class ProductController {
                 .body(new ApiResponse(false, "Xóa tất cả ảnh sản phẩm thất bại: " + e.getMessage(), null));
         }
     }
+
+    // API lấy danh sách sản phẩm có tồn kho thấp (chỉ ADMIN)
+    @GetMapping("/low-inventory")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse> getLowInventoryProducts(
+            @RequestParam(defaultValue = "5") int threshold) {
+        List<ProductDTO> products = productService.getLowInventoryProducts(threshold);
+        return ResponseEntity.ok(new ApiResponse(true, "Lấy danh sách sản phẩm tồn kho thấp thành công", products));
+    }
 }

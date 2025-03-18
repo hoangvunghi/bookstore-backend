@@ -265,4 +265,13 @@ public class ProductService {
         
         return product;
     }
+
+    // Lấy các sản phẩm có tồn kho thấp
+    public List<ProductDTO> getLowInventoryProducts(int threshold) {
+        List<Product> products = productRepository.findAll();
+        return products.stream()
+            .filter(p -> p.getInventoryCount() < threshold && p.isActive())
+            .map(this::convertToDTO)
+            .collect(Collectors.toList());
+    }
 }

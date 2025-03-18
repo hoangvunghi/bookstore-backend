@@ -30,6 +30,7 @@ public class Product {
     private int stockQuantity;
     private int discount;
     private int realPrice;
+    
     @Column(name = "author", columnDefinition = "VARCHAR(255)")
     private String author;
     @Column(name = "publisher", columnDefinition = "VARCHAR(255)")
@@ -79,6 +80,11 @@ public class Product {
     public void setDiscount(int discount) { this.discount = discount; }
     public int getRealPrice() { return realPrice; }
     public void setRealPrice(int realPrice) { this.realPrice = realPrice; }
+    
+    public Integer getInventoryCount() { 
+        return Math.max(0, this.stockQuantity - this.soldCount); 
+    }
+    
     public String getAuthor() { return author; }
     public void setAuthor(String author) { this.author = author; }
     public String getPublisher() { return publisher; }
