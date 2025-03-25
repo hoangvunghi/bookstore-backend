@@ -51,6 +51,12 @@ public class OrderService {
         dto.setTotalAmount(order.getTotalAmount());
         dto.setStatus(order.getStatus());
         
+        // Chuyển đổi thông tin địa chỉ
+        dto.setUseUserAddress(order.isUseUserAddress());
+        dto.setShippingName(order.getShippingFullName());
+        dto.setShippingPhone(order.getShippingPhone());
+        dto.setShippingAddress(order.getShippingAddress());
+        
         List<OrderDetailDTO> detailDTOs = order.getOrderDetails().stream()
             .map(this::convertToDTO)
             .collect(Collectors.toList());
@@ -99,7 +105,8 @@ public class OrderService {
 
     // Tạo đơn hàng mới
     @Transactional
-    public OrderDTO createOrder(Long userId, List<OrderDetailDTO> items) {
+    public OrderDTO createOrder(Long userId, List<OrderDetailDTO> items, 
+            boolean useUserAddress, String shippingName, String shippingPhone, String shippingAddress) {
         User user = userRepository.findById(userId).orElse(null);
         if (user == null || items.isEmpty()) {
             return null;
@@ -110,6 +117,22 @@ public class OrderService {
         order.setUser(user);
         order.setOrderDate(new Date());
         order.setStatus("PENDING");
+        order.setOrderDetails(new ArrayList<>()); // Khởi tạo danh sách orderDetails
+        
+        // Xử lý thông tin địa chỉ giao hàng
+        if (useUserAddress) {
+            // Sử dụng địa chỉ từ tài khoản người dùng
+            order.setShippingFullName(user.getFullName());
+            order.setShippingPhone(user.getPhoneNumber());
+            order.setShippingAddress(user.getAddress());
+        } else {
+            // Sử dụng địa chỉ mới
+            order.setShippingFullName(shippingName);
+            order.setShippingPhone(shippingPhone);
+            order.setShippingAddress(shippingAddress);
+        }
+        order.setUseUserAddress(useUserAddress);
+        
         order = orderRepository.save(order);
 
         // Tạo chi tiết đơn hàng
@@ -137,7 +160,8 @@ public class OrderService {
         }
 
         // Lưu chi tiết đơn hàng
-        orderDetailRepository.saveAll(details);
+        details = orderDetailRepository.saveAll(details);
+        order.setOrderDetails(details); // Gán danh sách details vào order
 
         // Cập nhật tổng tiền
         order.setTotalAmount(totalAmount);

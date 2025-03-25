@@ -1,7 +1,5 @@
 package com.example.bookstore.controller;
 
-import java.util.List;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -18,8 +16,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.bookstore.dto.ApiResponse;
+import com.example.bookstore.dto.CreateOrderRequest;
 import com.example.bookstore.dto.OrderDTO;
-import com.example.bookstore.dto.OrderDetailDTO;
 import com.example.bookstore.security.UserDetailsImpl;
 import com.example.bookstore.service.OrderService;
 
@@ -70,9 +68,16 @@ public class OrderController {
     @PostMapping
     public ResponseEntity<ApiResponse> createOrder(
             Authentication authentication,
-            @RequestBody List<OrderDetailDTO> items) {
+            @RequestBody CreateOrderRequest request) {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        OrderDTO createdOrder = orderService.createOrder(userDetails.getUser().getUserId(), items);
+        OrderDTO createdOrder = orderService.createOrder(
+            userDetails.getUser().getUserId(), 
+            request.getOrderDetails(),
+            request.isUseUserAddress(),
+            request.getShippingName(),
+            request.getShippingPhone(),
+            request.getShippingAddress()
+        );
         
         if (createdOrder == null) {
             return ResponseEntity.badRequest()
