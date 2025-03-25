@@ -51,10 +51,21 @@ public class OrderService {
         dto.setTotalAmount(order.getTotalAmount());
         dto.setStatus(order.getStatus());
         
-        List<OrderDetailDTO> detailDTOs = order.getOrderDetails().stream()
-            .map(this::convertToDTO)
-            .collect(Collectors.toList());
-        dto.setOrderDetails(detailDTOs);
+        // Thêm thông tin shipping
+        dto.setShippingName(order.getShippingName());
+        dto.setShippingPhone(order.getShippingPhone());
+        dto.setShippingAddress(order.getShippingAddress());
+        dto.setUseUserAddress(order.isUseUserAddress());
+        
+        // Kiểm tra null trước khi chuyển đổi orderDetails
+        if (order.getOrderDetails() != null) {
+            List<OrderDetailDTO> detailDTOs = order.getOrderDetails().stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+            dto.setOrderDetails(detailDTOs);
+        } else {
+            dto.setOrderDetails(new ArrayList<>());
+        }
         
         return dto;
     }
@@ -99,9 +110,9 @@ public class OrderService {
 
     // Tạo đơn hàng mới
     @Transactional
-    public OrderDTO createOrder(Long userId, List<OrderDetailDTO> items) {
-        User user = userRepository.findById(userId).orElse(null);
-        if (user == null || items.isEmpty()) {
+    public OrderDTO createOrder(OrderDTO orderDTO) {
+        User user = userRepository.findById(orderDTO.getUserId()).orElse(null);
+        if (user == null || orderDTO.getOrderDetails() == null || orderDTO.getOrderDetails().isEmpty()) {
             return null;
         }
 
@@ -110,13 +121,29 @@ public class OrderService {
         order.setUser(user);
         order.setOrderDate(new Date());
         order.setStatus("PENDING");
+
+        // Xử lý thông tin shipping
+        if (orderDTO.isUseUserAddress()) {
+            order.setUseUserAddress(true);
+            order.setShippingName(user.getFullName());
+            order.setShippingPhone(user.getPhoneNumber());
+            order.setShippingAddress(user.getAddress());
+        } else {
+            order.setUseUserAddress(false);
+            order.setShippingName(orderDTO.getShippingName());
+            order.setShippingPhone(orderDTO.getShippingPhone());
+            order.setShippingAddress(orderDTO.getShippingAddress());
+        }
+
+        // Khởi tạo danh sách orderDetails
+        order.setOrderDetails(new ArrayList<>());
         order = orderRepository.save(order);
 
         // Tạo chi tiết đơn hàng
         List<OrderDetail> details = new ArrayList<>();
         int totalAmount = 0;
 
-        for (OrderDetailDTO item : items) {
+        for (OrderDetailDTO item : orderDTO.getOrderDetails()) {
             Product product = productRepository.findById(item.getProductId()).orElse(null);
             if (product == null || item.getQuantity() <= 0) {
                 continue;
@@ -138,6 +165,7 @@ public class OrderService {
 
         // Lưu chi tiết đơn hàng
         orderDetailRepository.saveAll(details);
+        order.setOrderDetails(details);
 
         // Cập nhật tổng tiền
         order.setTotalAmount(totalAmount);

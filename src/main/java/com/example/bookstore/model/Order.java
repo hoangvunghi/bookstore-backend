@@ -27,6 +27,10 @@ public class Order {
     private Date orderDate;
     private int totalAmount;
     private String status;
+    private String shippingName;
+    private String shippingPhone;
+    private String shippingAddress;
+    private boolean useUserAddress; 
 
     @OneToMany(mappedBy = "order")
     private List<OrderDetail> orderDetails;
@@ -51,4 +55,14 @@ public class Order {
     public void setOrderDetails(List<OrderDetail> orderDetails) { this.orderDetails = orderDetails; }
     public Payment getPayment() { return payment; }
     public void setPayment(Payment payment) { this.payment = payment; }
+    
+    // Getters và setters cho thông tin địa chỉ nhận hàng
+    public String getShippingName() { return shippingName; }
+    public void setShippingName(String shippingName) { this.shippingName = shippingName; }
+    public String getShippingPhone() { return shippingPhone; }
+    public void setShippingPhone(String shippingPhone) { this.shippingPhone = shippingPhone; }
+    public String getShippingAddress() { return shippingAddress; }
+    public void setShippingAddress(String shippingAddress) { this.shippingAddress = shippingAddress; }
+    public boolean isUseUserAddress() { return useUserAddress; }
+    public void setUseUserAddress(boolean useUserAddress) { this.useUserAddress = useUserAddress; }
 }

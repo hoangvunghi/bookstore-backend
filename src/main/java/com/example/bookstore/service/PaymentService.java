@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.bookstore.model.Order;
 import com.example.bookstore.model.OrderDetail;
 import com.example.bookstore.model.Payment;
+import com.example.bookstore.model.PaymentMethod;
 import com.example.bookstore.model.Product;
 import com.example.bookstore.repository.OrderDetailRepository;
 import com.example.bookstore.repository.OrderRepository;
@@ -80,7 +81,7 @@ public class PaymentService {
             // Tạo bản ghi thanh toán mới
             Payment payment = new Payment();
             payment.setOrder(order);
-            payment.setPaymentMethod("VNPAY");
+            payment.setPaymentMethod(PaymentMethod.VNPAY);
             
             // Chuyển đổi số tiền từ chuỗi sang số
             try {
