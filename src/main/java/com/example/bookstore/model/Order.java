@@ -27,10 +27,12 @@ public class Order {
     private Date orderDate;
     private int totalAmount;
     private String status;
-    private String shippingName;
+
+    // Thông tin địa chỉ giao hàng
+    private String shippingFullName;
     private String shippingPhone;
     private String shippingAddress;
-    private boolean useUserAddress; 
+    private boolean useUserAddress; // true nếu sử dụng địa chỉ từ tài khoản
 
     @OneToMany(mappedBy = "order")
     private List<OrderDetail> orderDetails;
@@ -55,10 +57,10 @@ public class Order {
     public void setOrderDetails(List<OrderDetail> orderDetails) { this.orderDetails = orderDetails; }
     public Payment getPayment() { return payment; }
     public void setPayment(Payment payment) { this.payment = payment; }
-    
-    // Getters và setters cho thông tin địa chỉ nhận hàng
-    public String getShippingName() { return shippingName; }
-    public void setShippingName(String shippingName) { this.shippingName = shippingName; }
+
+    // Getters và setters cho thông tin địa chỉ giao hàng
+    public String getShippingFullName() { return shippingFullName; }
+    public void setShippingFullName(String shippingFullName) { this.shippingFullName = shippingFullName; }
     public String getShippingPhone() { return shippingPhone; }
     public void setShippingPhone(String shippingPhone) { this.shippingPhone = shippingPhone; }
     public String getShippingAddress() { return shippingAddress; }

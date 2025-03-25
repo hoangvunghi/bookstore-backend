@@ -7,5 +7,5 @@ import com.example.bookstore.model.Payment;
 
 @Repository
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
-    
+    Payment findByOrderOrderId(Long orderId);
 } 

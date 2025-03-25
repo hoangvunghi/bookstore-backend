@@ -6,11 +6,18 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.bookstore.dto.OrderPaymentRequest;
+import com.example.bookstore.dto.PaymentResponse;
+import com.example.bookstore.model.Order;
+import com.example.bookstore.model.Payment;
+import com.example.bookstore.model.PaymentMethod;
+import com.example.bookstore.service.OrderService;
 import com.example.bookstore.service.PaymentService;
 import com.example.bookstore.service.VNPAYService;
 
@@ -25,25 +32,59 @@ public class PaymentController {
     @Autowired
     private PaymentService paymentService;
 
-    @PostMapping("/create")
-    public ResponseEntity<?> createPayment(@RequestParam("amount") int orderTotal,
-                                         @RequestParam("orderInfo") String orderInfo,
-                                         HttpServletRequest request) {
-        try {
-            String baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
-            String vnpayUrl = vnPayService.createOrder(request, orderTotal, orderInfo, baseUrl);
-            
-            return ResponseEntity.ok(Map.of(
-                "status", "success",
-                "message", "Tạo URL thanh toán thành công",
-                "paymentUrl", vnpayUrl
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                "status", "error",
-                "message", e.getMessage()
+    @Autowired
+    private OrderService orderService;
+
+    @PostMapping("/order")
+    public ResponseEntity<PaymentResponse> processOrderPayment(
+            @RequestBody OrderPaymentRequest request,
+            HttpServletRequest servletRequest) {
+        
+        // Lấy thông tin đơn hàng
+        Order order = orderService.getOrderEntity(request.getOrderId());
+        if (order == null) {
+            return ResponseEntity.badRequest()
+                .body(new PaymentResponse("error", "Không tìm thấy đơn hàng", null, request.getOrderId()));
+        }
+
+        // Tạo payment
+        Payment payment = paymentService.createPayment(order, request.getPaymentMethod());
+
+        // Xử lý theo phương thức thanh toán
+        if (request.getPaymentMethod() == PaymentMethod.VNPAY) {
+            try {
+                // Tạo URL thanh toán VNPAY
+                String baseUrl = servletRequest.getScheme() + "://" + servletRequest.getServerName() + ":" + servletRequest.getServerPort();
+                String vnpayUrl = vnPayService.createOrder(servletRequest, order.getTotalAmount(), 
+                    String.valueOf(order.getOrderId()), baseUrl);
+                
+                return ResponseEntity.ok(new PaymentResponse(
+                    "success",
+                    "Vui lòng thanh toán qua VNPAY",
+                    vnpayUrl,
+                    order.getOrderId()
+                ));
+            } catch (Exception e) {
+                return ResponseEntity.badRequest()
+                    .body(new PaymentResponse("error", "Lỗi khi tạo URL thanh toán", null, order.getOrderId()));
+            }
+        } else if (request.getPaymentMethod() == PaymentMethod.COD) {
+            // Cập nhật trạng thái đơn hàng sang CONFIRMED với COD
+            orderService.updateOrderStatus(order.getOrderId(), "CONFIRMED");
+            return ResponseEntity.ok(new PaymentResponse(
+                "success",
+                "Đơn hàng sẽ được thanh toán khi nhận hàng",
+                null,
+                order.getOrderId()
             ));
         }
+
+        return ResponseEntity.ok(new PaymentResponse(
+            "success",
+            "Đã cập nhật phương thức thanh toán",
+            null,
+            order.getOrderId()
+        ));
     }
 
     @GetMapping("/vnpay-return")
@@ -83,5 +124,44 @@ public class PaymentController {
             response.put("message", "Chữ ký không hợp lệ");
         }
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/retry/{orderId}")
+    public ResponseEntity<PaymentResponse> retryPayment(
+            @PathVariable Long orderId,
+            HttpServletRequest servletRequest) {
+        
+        // Lấy thông tin đơn hàng
+        Order order = orderService.getOrderEntity(orderId);
+        if (order == null) {
+            return ResponseEntity.badRequest()
+                .body(new PaymentResponse("error", "Không tìm thấy đơn hàng", null, orderId));
+        }
+
+        // Kiểm tra trạng thái đơn hàng
+        if (order.getStatus().equals("PAID") || order.getStatus().equals("DELIVERED")) {
+            return ResponseEntity.badRequest()
+                .body(new PaymentResponse("error", "Đơn hàng đã được thanh toán", null, orderId));
+        }
+
+        try {
+            // Tạo URL thanh toán VNPAY mới
+            String baseUrl = servletRequest.getScheme() + "://" + servletRequest.getServerName() + ":" + servletRequest.getServerPort();
+            String vnpayUrl = vnPayService.createOrder(servletRequest, order.getTotalAmount(), 
+                String.valueOf(order.getOrderId()), baseUrl);
+            
+            // Cập nhật trạng thái payment về PENDING
+            paymentService.updatePaymentStatus(orderId, "PENDING");
+            
+            return ResponseEntity.ok(new PaymentResponse(
+                "success",
+                "Vui lòng thử thanh toán lại qua VNPAY",
+                vnpayUrl,
+                orderId
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                .body(new PaymentResponse("error", "Lỗi khi tạo URL thanh toán mới", null, orderId));
+        }
     }
 }

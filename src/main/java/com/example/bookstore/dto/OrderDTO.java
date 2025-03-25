@@ -9,13 +9,6 @@ public class OrderDTO {
     private Date orderDate;
     private int totalAmount;
     private String status;
-    
-    // Thông tin địa chỉ nhận hàng
-    private String shippingName;
-    private String shippingPhone;
-    private String shippingAddress;
-    private boolean useUserAddress;
-    
     private List<OrderDetailDTO> orderDetails;
 
     // Constructors
@@ -68,38 +61,5 @@ public class OrderDTO {
 
     public void setOrderDetails(List<OrderDetailDTO> orderDetails) {
         this.orderDetails = orderDetails;
-    }
-    
-    // Getters và setters cho thông tin địa chỉ nhận hàng
-    public String getShippingName() {
-        return shippingName;
-    }
-
-    public void setShippingName(String shippingName) {
-        this.shippingName = shippingName;
-    }
-
-    public String getShippingPhone() {
-        return shippingPhone;
-    }
-
-    public void setShippingPhone(String shippingPhone) {
-        this.shippingPhone = shippingPhone;
-    }
-
-    public String getShippingAddress() {
-        return shippingAddress;
-    }
-
-    public void setShippingAddress(String shippingAddress) {
-        this.shippingAddress = shippingAddress;
-    }
-
-    public boolean isUseUserAddress() {
-        return useUserAddress;
-    }
-
-    public void setUseUserAddress(boolean useUserAddress) {
-        this.useUserAddress = useUserAddress;
     }
 } 

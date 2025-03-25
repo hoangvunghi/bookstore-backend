@@ -78,12 +78,14 @@ public class PaymentService {
                 return true; // Trả về true để không hiển thị lỗi cho người dùng
             }
             
-            // Tạo bản ghi thanh toán mới
-            Payment payment = new Payment();
-            payment.setOrder(order);
-            payment.setPaymentMethod(PaymentMethod.VNPAY);
+            // Tìm và cập nhật payment hiện có
+            Payment payment = paymentRepository.findByOrderOrderId(orderIdLong);
+            if (payment == null) {
+                System.out.println("Lỗi: Không tìm thấy payment cho đơn hàng: " + orderIdLong);
+                return false;
+            }
             
-            // Chuyển đổi số tiền từ chuỗi sang số
+            // Cập nhật thông tin payment
             try {
                 // VNPay trả về số tiền đã nhân 100, cần chia cho 100
                 int paymentAmount = Integer.parseInt(amount) / 100;
@@ -93,7 +95,7 @@ public class PaymentService {
                 return false;
             }
             
-            payment.setPaymentDate(new Date()); // Thời gian hiện tại
+            payment.setPaymentDate(new Date());
             payment.setStatus("SUCCESS");
             
             // Lưu thông tin thanh toán
@@ -198,6 +200,26 @@ public class PaymentService {
             System.out.println("Lỗi khi xử lý thanh toán thất bại: " + e.getMessage());
             e.printStackTrace();
             return false;
+        }
+    }
+
+    public Payment createPayment(Order order, PaymentMethod paymentMethod) {
+        Payment payment = new Payment();
+        payment.setOrder(order);
+        payment.setPaymentMethod(paymentMethod);
+        payment.setAmount(order.getTotalAmount());
+        payment.setPaymentDate(new Date());
+        payment.setStatus("PENDING");
+        
+        return paymentRepository.save(payment);
+    }
+
+    @Transactional
+    public void updatePaymentStatus(Long orderId, String status) {
+        Payment payment = paymentRepository.findByOrderOrderId(orderId);
+        if (payment != null) {
+            payment.setStatus(status);
+            paymentRepository.save(payment);
         }
     }
 } 
