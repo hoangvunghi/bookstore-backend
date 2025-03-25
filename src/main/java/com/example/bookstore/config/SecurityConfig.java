@@ -13,6 +13,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
 import com.example.bookstore.security.JwtAuthenticationFilter;
 import com.example.bookstore.security.UserDetailsServiceImpl;
@@ -21,6 +22,7 @@ import io.swagger.v3.oas.models.PathItem;
 
 @Configuration
 @EnableMethodSecurity
+@EnableWebSecurity
 public class SecurityConfig {
     private final UserDetailsServiceImpl userDetailsService;
     private final JwtAuthenticationFilter jwtAuthFilter;
@@ -60,6 +62,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/product-categories/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/images/**").permitAll() // Cho phép truy cập hình ảnh
+                .requestMatchers("/api/payment/vnpay-return").permitAll() // Cho phép truy cập endpoint VNPAY return
                 .anyRequest().authenticated() // Các request khác phải xác thực
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Không dùng session
