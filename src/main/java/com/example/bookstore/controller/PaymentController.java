@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.bookstore.dto.ApiResponse;
 import com.example.bookstore.dto.OrderPaymentRequest;
 import com.example.bookstore.dto.PaymentResponse;
 import com.example.bookstore.model.Order;
@@ -85,37 +84,80 @@ public class PaymentController {
         ));
     }
 
-    @GetMapping("/vnpay-return")
-    public ResponseEntity<ApiResponse> paymentReturn(HttpServletRequest request) {
-        try {
-            // Lấy thông tin từ request
-            String orderId = request.getParameter("vnp_OrderInfo");
-            String amount = request.getParameter("vnp_Amount");
-            String transactionId = request.getParameter("vnp_TransactionNo");
-            String paymentDate = request.getParameter("vnp_PayDate");
-            String responseCode = request.getParameter("vnp_ResponseCode");
+    // @GetMapping("/vnpay-return")
+    // public ResponseEntity<ApiResponse> paymentReturn(HttpServletRequest request) {
+    //     try {
+    //         // Lấy thông tin từ request
+    //         String orderId = request.getParameter("vnp_OrderInfo");
+    //         String amount = request.getParameter("vnp_Amount");
+    //         String transactionId = request.getParameter("vnp_TransactionNo");
+    //         String paymentDate = request.getParameter("vnp_PayDate");
+    //         String responseCode = request.getParameter("vnp_ResponseCode");
             
-            // Kiểm tra kết quả giao dịch
-            if ("00".equals(responseCode)) {
-                // Thanh toán thành công
-                boolean processSuccess = paymentService.processSuccessfulPayment(
-                    orderId, amount, transactionId, paymentDate);
+    //         // Kiểm tra kết quả giao dịch
+    //         if ("00".equals(responseCode)) {
+    //             // Thanh toán thành công
+    //             boolean processSuccess = paymentService.processSuccessfulPayment(
+    //                 orderId, amount, transactionId, paymentDate);
                 
-                if (processSuccess) {
-                    return ResponseEntity.ok(new ApiResponse(true, "Thanh toán thành công"));
-                } else {
-                    return ResponseEntity.ok(new ApiResponse(false, "Thanh toán thành công nhưng xử lý đơn hàng thất bại"));
-                }
-            } else {
-                // Thanh toán thất bại
-                paymentService.processFailedPayment(orderId);
-                return ResponseEntity.ok(new ApiResponse(false, "Thanh toán thất bại"));
-            }
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(new ApiResponse(false, "Lỗi xử lý thanh toán: " + e.getMessage()));
-        }
-    }
+    //             if (processSuccess) {
+    //                 return ResponseEntity.ok(new ApiResponse(true, "Thanh toán thành công"));
+    //             } else {
+    //                 return ResponseEntity.ok(new ApiResponse(false, "Thanh toán thành công nhưng xử lý đơn hàng thất bại"));
+    //             }
+    //         } else {
+    //             // Thanh toán thất bại
+    //             paymentService.processFailedPayment(orderId);
+    //             return ResponseEntity.ok(new ApiResponse(false, "Thanh toán thất bại"));
+    //         }
+    //     } catch (Exception e) {
+    //         return ResponseEntity.internalServerError().body(new ApiResponse(false, "Lỗi xử lý thanh toán: " + e.getMessage()));
+    //     }
+    // }
 
+    @GetMapping("/vnpay-return")
+public ResponseEntity<Object> paymentReturn(HttpServletRequest request) {
+    try {
+        // Lấy thông tin từ request
+        String orderId = request.getParameter("vnp_OrderInfo");
+        String amount = request.getParameter("vnp_Amount");
+        String transactionId = request.getParameter("vnp_TransactionNo");
+        String paymentDate = request.getParameter("vnp_PayDate");
+        String responseCode = request.getParameter("vnp_ResponseCode");
+        
+        // Khởi tạo URL redirect mặc định
+        String redirectUrl = "http://localhost:3000/payment-failed";
+        
+        // Kiểm tra kết quả giao dịch
+        if ("00".equals(responseCode)) {
+            // Thanh toán thành công
+            boolean processSuccess = paymentService.processSuccessfulPayment(
+                orderId, amount, transactionId, paymentDate);
+            
+            if (processSuccess) {
+                // Redirect đến trang thông báo thanh toán thành công
+                redirectUrl = "http://localhost:3000/payment-success?orderId=" + orderId;
+            } else {
+                // Có lỗi xử lý sau thanh toán
+                redirectUrl = "http://localhost:3000/payment-failed?reason=process-failed";
+            }
+        } else {
+            // Thanh toán thất bại
+            paymentService.processFailedPayment(orderId);
+            redirectUrl = "http://localhost:3000/payment-failed?reason=payment-failed&code=" + responseCode;
+        }
+        
+        // Thực hiện chuyển hướng HTTP
+        org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+        headers.add("Location", redirectUrl);
+        return new ResponseEntity<>(headers, org.springframework.http.HttpStatus.FOUND);
+    } catch (Exception e) {
+        // Nếu có lỗi, redirect đến trang lỗi
+        org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+        headers.add("Location", "http://localhost:3000/payment-failed?reason=server-error");
+        return new ResponseEntity<>(headers, org.springframework.http.HttpStatus.FOUND);
+    }
+}
     @PostMapping("/retry/{orderId}")
     public ResponseEntity<PaymentResponse> retryPayment(
             @PathVariable Long orderId,

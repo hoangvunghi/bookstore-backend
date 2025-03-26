@@ -92,7 +92,10 @@ public class OrderService {
         if (user == null) {
             return Page.empty();
         }
-        return orderRepository.findByUser(user, pageable)
+        // return orderRepository.findByUser(user, pageable)
+        //         .map(this::convertToDTO);
+        // lấy đơn hàng mới nhất lên trước
+        return orderRepository.findByUserOrderByOrderDateDesc(user, pageable)
                 .map(this::convertToDTO);
     }
 
