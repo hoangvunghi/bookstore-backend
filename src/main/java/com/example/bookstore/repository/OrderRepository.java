@@ -1,5 +1,6 @@
 package com.example.bookstore.repository;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -18,4 +19,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     Page<Order> findByStatus(String status, Pageable pageable);
     // findByUserOrderByOrderDateDesc
     Page<Order> findByUserOrderByOrderDateDesc(User user, Pageable pageable);
+    List<Order> findByOrderDateBetween(Date startDate, Date endDate);
+    List<Order> findByOrderDateBetweenAndStatus(Date startDate, Date endDate, String status);
 } 

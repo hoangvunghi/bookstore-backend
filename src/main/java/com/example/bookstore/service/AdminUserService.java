@@ -142,6 +142,9 @@ public class AdminUserService {
 
         User user = optionalUser.get();
         user.setActive(false);
+        System.out.println("--------------------------------");
+        System.out.println("User deactivated: " + user.getUsername());
+        System.out.println("--------------------------------");
         userRepository.save(user);
         return true;
     }

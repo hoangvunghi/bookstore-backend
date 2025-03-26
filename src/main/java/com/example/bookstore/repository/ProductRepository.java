@@ -1,5 +1,6 @@
 package com.example.bookstore.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -9,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.example.bookstore.model.Category;
 import com.example.bookstore.model.Product;
 
 @Repository
@@ -89,4 +91,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     // Top selling products
     @Query("SELECT p FROM Product p WHERE p.isActive = true ORDER BY p.soldCount DESC")
     Page<Product> findTopSellingProducts(Pageable pageable);
+
+    List<Product> findByCategories(Category category);
+    List<Product> findByCategoriesCategoryId(Long categoryId);
+    long countByCategoriesCategoryId(Long categoryId);
 }
