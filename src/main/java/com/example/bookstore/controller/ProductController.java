@@ -660,7 +660,7 @@ public class ProductController {
             } else if ("price".equals(sortBy)) {
                 dbField = "real_price"; // Sửa lại thành "real_price" để khớp với database
             } else if ("newest".equals(sortBy)) {
-                dbField = "publication_year"; // Sửa lại thành "publication_year" để khớp với database
+                dbField = "product_id"; // Sửa thành product_id thay vì publication_year
             } else if ("bestselling".equals(sortBy) || "bestseller".equals(sortBy) || "soldCount".equals(sortBy)) {
                 dbField = "sold_count"; // Sửa lại thành "sold_count" để khớp với database
             }

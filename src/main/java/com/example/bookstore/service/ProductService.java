@@ -183,13 +183,13 @@ public class ProductService {
                     dbField = "real_price";
                     break;
                 case "newest":
-                    dbField = "publication_year";
-                    direction = Sort.Direction.DESC; // luôn giảm dần cho newest
+                    dbField = "product_id";
+                    direction = Sort.Direction.DESC;
                     break;
                 case "bestselling":
                 case "bestseller":
                     dbField = "sold_count";
-                    direction = Sort.Direction.DESC; // luôn giảm dần cho bestselling
+                    direction = Sort.Direction.DESC;
                     break;
                 case "rating":
                     // Không thể sắp xếp theo rating trong JPA vì nó được tính động
