@@ -60,7 +60,22 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
            "AND (:minStock IS NULL OR p.stock_quantity >= :minStock) " +
            "AND (:minSold IS NULL OR p.sold_count >= :minSold) " +
            "AND (:minRating IS NULL OR (SELECT AVG(r.rating) FROM reviews r WHERE r.product_id = p.product_id) >= :minRating)",
-           nativeQuery = true)
+           nativeQuery = true,
+           countQuery = "SELECT COUNT(DISTINCT p.product_id) FROM products p " +
+           "LEFT JOIN productcategory pc ON p.product_id = pc.product_id " +
+           "WHERE p.is_active = true " +
+           "AND (:name IS NULL OR LOWER(p.name::text) LIKE LOWER(CONCAT('%', :name, '%'))) " +
+           "AND (:author IS NULL OR LOWER(p.author::text) LIKE LOWER(CONCAT('%', :author, '%'))) " +
+           "AND (:publisher IS NULL OR LOWER(p.publisher::text) LIKE LOWER(CONCAT('%', :publisher, '%'))) " +
+           "AND (:minPrice IS NULL OR p.price >= :minPrice) " +
+           "AND (:maxPrice IS NULL OR p.price <= :maxPrice) " +
+           "AND (:minRealPrice IS NULL OR p.real_price >= :minRealPrice) " +
+           "AND (:maxRealPrice IS NULL OR p.real_price <= :maxRealPrice) " +
+           "AND (:year IS NULL OR p.publication_year = :year) " +
+           "AND (:categoryId IS NULL OR pc.category_id = :categoryId) " +
+           "AND (:minStock IS NULL OR p.stock_quantity >= :minStock) " +
+           "AND (:minSold IS NULL OR p.sold_count >= :minSold) " +
+           "AND (:minRating IS NULL OR (SELECT AVG(r.rating) FROM reviews r WHERE r.product_id = p.product_id) >= :minRating)")
     Page<Product> searchProducts(
             @Param("name") String name,
             @Param("author") String author,
@@ -95,4 +110,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByCategories(Category category);
     List<Product> findByCategoriesCategoryId(Long categoryId);
     long countByCategoriesCategoryId(Long categoryId);
+
+    // Phương thức JPQL đơn giản để kiểm tra sort
+    @Query("SELECT p FROM Product p WHERE p.isActive = true ORDER BY p.productId")
+    Page<Product> findAllActiveSorted(Pageable pageable);
 }

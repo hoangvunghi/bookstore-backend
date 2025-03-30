@@ -7,7 +7,9 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -149,11 +151,111 @@ public class ProductService {
             Integer minStock,
             Integer minSold,
             Double minRating,
+            String sortBy,
+            String sortDir,
             Pageable pageable) {
+        
+        System.out.println("===== DEBUGGING SORT PARAMS =====");
+        System.out.println("Original sortBy: " + sortBy);
+        System.out.println("Original sortDir: " + sortDir);
+        System.out.println("Original pageable: " + pageable);
+        
+        // Lấy thông tin phân trang
+        int pageNumber = pageable.getPageNumber();
+        int pageSize = pageable.getPageSize();
+        
+        // Xác định hướng sắp xếp
+        Sort.Direction direction = "desc".equalsIgnoreCase(sortDir) ? 
+            Sort.Direction.DESC : Sort.Direction.ASC;
+        
+        System.out.println("Direction: " + direction);
+        
+        // Xác định trường sắp xếp
+        String dbField = "product_id"; // mặc định
+        
+        // Xác định trường sắp xếp theo tham số sortBy
+        if (sortBy != null && !sortBy.isEmpty()) {
+            switch (sortBy) {
+                case "name":
+                    dbField = "name";
+                    break;
+                case "price":
+                    dbField = "real_price";
+                    break;
+                case "newest":
+                    dbField = "publication_year";
+                    direction = Sort.Direction.DESC; // luôn giảm dần cho newest
+                    break;
+                case "bestselling":
+                case "bestseller":
+                    dbField = "sold_count";
+                    direction = Sort.Direction.DESC; // luôn giảm dần cho bestselling
+                    break;
+                case "rating":
+                    // Không thể sắp xếp theo rating trong JPA vì nó được tính động
+                    // dùng mặc định
+                    break;
+                case "soldCount":
+                    dbField = "sold_count";
+                    break;
+                default:
+                    // Kiểm tra xem có phải là tên trường entity không
+                    if (!sortBy.contains("_")) {
+                        dbField = convertToSnakeCase(sortBy); // Chuyển từ camelCase sang snake_case
+                    } else {
+                        dbField = sortBy; // Giữ nguyên snake_case
+                    }
+            }
+        }
+        
+        System.out.println("Final dbField: " + dbField);
+        System.out.println("Final direction: " + direction);
+        
+        // Tạo đối tượng PageRequest mới với thông tin sắp xếp
+        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize, direction, dbField);
+        
+        System.out.println("Generated pageRequest: " + pageRequest);
+        System.out.println("===== END DEBUGGING =====");
+        
+        // Gọi repo với pageable mới
         return productRepository.searchProducts(
                 name, author, publisher, minPrice, maxPrice, minRealPrice, maxRealPrice,
-                year, categoryId, minStock, minSold, minRating, pageable)
+                year, categoryId, minStock, minSold, minRating, pageRequest)
                 .map(this::convertToDTO);
+    }
+
+    // Phương thức hỗ trợ chuyển đổi từ camelCase sang snake_case
+    private String convertToSnakeCase(String input) {
+        if (input == null || input.isEmpty()) {
+            return input;
+        }
+        
+        // Xử lý một số trường hợp đặc biệt
+        switch (input) {
+            case "productId":
+                return "product_id";
+            case "realPrice":
+                return "real_price";
+            case "stockQuantity":
+                return "stock_quantity";
+            case "soldCount":
+                return "sold_count";
+            case "publicationYear":
+                return "publication_year";
+        }
+        
+        // Chuyển đổi chung
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < input.length(); i++) {
+            char c = input.charAt(i);
+            if (Character.isUpperCase(c)) {
+                result.append('_');
+                result.append(Character.toLowerCase(c));
+            } else {
+                result.append(c);
+            }
+        }
+        return result.toString();
     }
 
     // Các phương thức đặc biệt

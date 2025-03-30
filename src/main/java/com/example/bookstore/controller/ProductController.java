@@ -5,7 +5,9 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
@@ -430,16 +432,29 @@ public class ProductController {
             @RequestParam(required = false) Integer minStock,
             @RequestParam(required = false) Integer minSold,
             @RequestParam(required = false) Double minRating,
+            @RequestParam(required = false, defaultValue = "product_id") String sortBy,
+            @RequestParam(required = false, defaultValue = "asc") String sortDir,
             @PageableDefault(size = 10) Pageable pageable) {
         try {
+            System.out.println("==== CONTROLLER PARAMS ====");
+            System.out.println("Controller received sortBy: " + sortBy);
+            System.out.println("Controller received sortDir: " + sortDir);
+            System.out.println("Controller received pageable: " + pageable);
+            System.out.println("============================");
+            
             Page<ProductDTO> products = productService.advancedSearch(
                     name, author, publisher, minPrice, maxPrice, minRealPrice, maxRealPrice,
-                    year, categoryId, minStock, minSold, minRating, pageable);
+                    year, categoryId, minStock, minSold, minRating, sortBy, sortDir, pageable);
             return ResponseEntity.ok(new ApiResponse(true, "Tìm kiếm nâng cao thành công", products));
         } catch (PropertyReferenceException e) {
             return ResponseEntity.badRequest()
-                .body(new ApiResponse(false, "Tham số sắp xếp không hợp lệ", null));
+                .body(new ApiResponse(false, "Tham số sắp xếp không hợp lệ: " + e.getMessage(), null));
         } catch (Exception e) {
+            System.out.println("==== ERROR DETAILS ====");
+            System.out.println("Error in search: " + e.getMessage());
+            e.printStackTrace();
+            System.out.println("=======================");
+            
             return ResponseEntity.status(500)
                 .body(new ApiResponse(false, "Tìm kiếm sản phẩm thất bại: " + e.getMessage(), null));
         }
@@ -609,5 +624,73 @@ public class ProductController {
             @RequestParam(defaultValue = "5") int threshold) {
         List<ProductDTO> products = productService.getLowInventoryProducts(threshold);
         return ResponseEntity.ok(new ApiResponse(true, "Lấy danh sách sản phẩm tồn kho thấp thành công", products));
+    }
+
+    @GetMapping("/test-sort")
+    public ResponseEntity<ApiResponse> testSorting(
+            @RequestParam(required = false, defaultValue = "product_id") String sortBy,
+            @RequestParam(required = false, defaultValue = "asc") String sortDir,
+            @PageableDefault(size = 10) Pageable pageable) {
+        try {
+            System.out.println("==== TEST SORT PARAMS ====");
+            System.out.println("Test received sortBy: " + sortBy);
+            System.out.println("Test received sortDir: " + sortDir);
+            System.out.println("Original pageable: " + pageable);
+            
+            // Tạo sort mới
+            Sort.Direction direction = "desc".equalsIgnoreCase(sortDir) ? 
+                Sort.Direction.DESC : Sort.Direction.ASC;
+            
+            String dbField = sortBy;
+            if (!sortBy.contains("_") && !"name".equals(sortBy) && !"price".equals(sortBy) 
+                && !"newest".equals(sortBy) && !"bestselling".equals(sortBy) 
+                && !"bestseller".equals(sortBy) && !"soldCount".equals(sortBy)) {
+                // Chuyển đổi camelCase sang snake_case
+                StringBuilder result = new StringBuilder();
+                for (int i = 0; i < sortBy.length(); i++) {
+                    char c = sortBy.charAt(i);
+                    if (Character.isUpperCase(c)) {
+                        result.append('_');
+                        result.append(Character.toLowerCase(c));
+                    } else {
+                        result.append(c);
+                    }
+                }
+                dbField = result.toString();
+            } else if ("price".equals(sortBy)) {
+                dbField = "real_price"; // Sửa lại thành "real_price" để khớp với database
+            } else if ("newest".equals(sortBy)) {
+                dbField = "publication_year"; // Sửa lại thành "publication_year" để khớp với database
+            } else if ("bestselling".equals(sortBy) || "bestseller".equals(sortBy) || "soldCount".equals(sortBy)) {
+                dbField = "sold_count"; // Sửa lại thành "sold_count" để khớp với database
+            }
+            
+            System.out.println("Final dbField: " + dbField);
+            System.out.println("Final direction: " + direction);
+            
+            // Tạo pageable mới
+            PageRequest pageRequest = PageRequest.of(
+                pageable.getPageNumber(), 
+                pageable.getPageSize(), 
+                direction, 
+                dbField);
+            
+            System.out.println("Generated pageRequest: " + pageRequest);
+            System.out.println("==========================");
+            
+            // Sử dụng phương thức đơn giản - chỉ lấy danh sách chính
+            Page<ProductDTO> products = productService.getAllProducts(pageRequest);
+            
+            return ResponseEntity.ok(new ApiResponse(true, "Test sắp xếp thành công", products));
+        } catch (PropertyReferenceException e) {
+            System.out.println("PropertyReferenceException: " + e.getMessage());
+            return ResponseEntity.badRequest()
+                .body(new ApiResponse(false, "Tham số sắp xếp không hợp lệ: " + e.getMessage(), null));
+        } catch (Exception e) {
+            System.out.println("Exception: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500)
+                .body(new ApiResponse(false, "Test thất bại: " + e.getMessage(), null));
+        }
     }
 }
