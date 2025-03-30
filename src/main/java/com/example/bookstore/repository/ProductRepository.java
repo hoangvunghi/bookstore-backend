@@ -46,25 +46,20 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     
     // Tìm kiếm nâng cao
     @Query(value = "SELECT DISTINCT p.* FROM products p " +
-                   "LEFT JOIN productcategory pc ON p.product_id = pc.product_id " +
-                   "WHERE p.is_active = true " +
-                   "AND (:name IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))) " +
-                   "AND (:author IS NULL OR LOWER(p.author) LIKE LOWER(CONCAT('%', :author, '%'))) " +
-                   "AND (:publisher IS NULL OR LOWER(p.publisher) LIKE LOWER(CONCAT('%', :publisher, '%'))) " +
-                   "AND (:minPrice IS NULL OR p.price >= :minPrice) " +
-                   "AND (:maxPrice IS NULL OR p.price <= :maxPrice) " +
-                   "AND (:year IS NULL OR p.publication_year = :year) " +
-                   "AND (:categoryId IS NULL OR pc.category_id = :categoryId)",
-           countQuery = "SELECT COUNT(DISTINCT p.product_id) FROM products p " +
-                        "LEFT JOIN productcategory pc ON p.product_id = pc.product_id " +
-                        "WHERE p.is_active = true " +
-                        "AND (:name IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))) " +
-                        "AND (:author IS NULL OR LOWER(p.author) LIKE LOWER(CONCAT('%', :author, '%'))) " +
-                        "AND (:publisher IS NULL OR LOWER(p.publisher) LIKE LOWER(CONCAT('%', :publisher, '%'))) " +
-                        "AND (:minPrice IS NULL OR p.price >= :minPrice) " +
-                        "AND (:maxPrice IS NULL OR p.price <= :maxPrice) " +
-                        "AND (:year IS NULL OR p.publication_year = :year) " +
-                        "AND (:categoryId IS NULL OR pc.category_id = :categoryId)",
+           "LEFT JOIN productcategory pc ON p.product_id = pc.product_id " +
+           "WHERE p.is_active = true " +
+           "AND (:name IS NULL OR LOWER(p.name::text) LIKE LOWER(CONCAT('%', :name, '%'))) " +
+           "AND (:author IS NULL OR LOWER(p.author::text) LIKE LOWER(CONCAT('%', :author, '%'))) " +
+           "AND (:publisher IS NULL OR LOWER(p.publisher::text) LIKE LOWER(CONCAT('%', :publisher, '%'))) " +
+           "AND (:minPrice IS NULL OR p.price >= :minPrice) " +
+           "AND (:maxPrice IS NULL OR p.price <= :maxPrice) " +
+           "AND (:minRealPrice IS NULL OR p.real_price >= :minRealPrice) " +
+           "AND (:maxRealPrice IS NULL OR p.real_price <= :maxRealPrice) " +
+           "AND (:year IS NULL OR p.publication_year = :year) " +
+           "AND (:categoryId IS NULL OR pc.category_id = :categoryId) " +
+           "AND (:minStock IS NULL OR p.stock_quantity >= :minStock) " +
+           "AND (:minSold IS NULL OR p.sold_count >= :minSold) " +
+           "AND (:minRating IS NULL OR (SELECT AVG(r.rating) FROM reviews r WHERE r.product_id = p.product_id) >= :minRating)",
            nativeQuery = true)
     Page<Product> searchProducts(
             @Param("name") String name,
@@ -72,10 +67,15 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             @Param("publisher") String publisher,
             @Param("minPrice") Integer minPrice,
             @Param("maxPrice") Integer maxPrice,
+            @Param("minRealPrice") Integer minRealPrice,
+            @Param("maxRealPrice") Integer maxRealPrice,
             @Param("year") Integer year,
             @Param("categoryId") Long categoryId,
+            @Param("minStock") Integer minStock,
+            @Param("minSold") Integer minSold,
+            @Param("minRating") Double minRating,
             Pageable pageable);
-            
+    
     // Lấy sách có giảm giá
     Page<Product> findByDiscountGreaterThan(int minDiscount, Pageable pageable);
     

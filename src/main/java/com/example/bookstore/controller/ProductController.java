@@ -55,7 +55,7 @@ public class ProductController {
                     (ife.getPath().isEmpty() ? "không xác định" : ife.getPath().get(0).getFieldName()) + 
                     "'. Giá trị đúng phải là kiểu " + ife.getTargetType().getSimpleName();
             } else {
-                errorMessage = "Lỗi ánh xạ JSON: " + cause.getMessage();
+                errorMessage = "Lỗi ánh xếp JSON: " + cause.getMessage();
             }
         }
         
@@ -423,12 +423,18 @@ public class ProductController {
             @RequestParam(required = false) String publisher,
             @RequestParam(required = false) Integer minPrice,
             @RequestParam(required = false) Integer maxPrice,
+            @RequestParam(required = false) Integer minRealPrice,
+            @RequestParam(required = false) Integer maxRealPrice,
             @RequestParam(required = false) Integer year,
             @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) Integer minStock,
+            @RequestParam(required = false) Integer minSold,
+            @RequestParam(required = false) Double minRating,
             @PageableDefault(size = 10) Pageable pageable) {
         try {
             Page<ProductDTO> products = productService.advancedSearch(
-                    name, author, publisher, minPrice, maxPrice, year, categoryId, pageable);
+                    name, author, publisher, minPrice, maxPrice, minRealPrice, maxRealPrice,
+                    year, categoryId, minStock, minSold, minRating, pageable);
             return ResponseEntity.ok(new ApiResponse(true, "Tìm kiếm nâng cao thành công", products));
         } catch (PropertyReferenceException e) {
             return ResponseEntity.badRequest()

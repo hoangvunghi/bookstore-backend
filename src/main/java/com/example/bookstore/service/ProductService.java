@@ -141,12 +141,18 @@ public class ProductService {
             String author, 
             String publisher, 
             Integer minPrice, 
-            Integer maxPrice, 
+            Integer maxPrice,
+            Integer minRealPrice,
+            Integer maxRealPrice,
             Integer year, 
-            Long categoryId, 
+            Long categoryId,
+            Integer minStock,
+            Integer minSold,
+            Double minRating,
             Pageable pageable) {
         return productRepository.searchProducts(
-                name, author, publisher, minPrice, maxPrice, year, categoryId, pageable)
+                name, author, publisher, minPrice, maxPrice, minRealPrice, maxRealPrice,
+                year, categoryId, minStock, minSold, minRating, pageable)
                 .map(this::convertToDTO);
     }
 
