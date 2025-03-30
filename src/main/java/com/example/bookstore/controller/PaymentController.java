@@ -126,7 +126,7 @@ public ResponseEntity<Object> paymentReturn(HttpServletRequest request) {
         String responseCode = request.getParameter("vnp_ResponseCode");
         
         // Khởi tạo URL redirect mặc định
-        String redirectUrl = "http://localhost:3000/payment-failed";
+        String redirectUrl = "http://localhost:5173/payment-failed";
         
         // Kiểm tra kết quả giao dịch
         if ("00".equals(responseCode)) {
@@ -136,15 +136,15 @@ public ResponseEntity<Object> paymentReturn(HttpServletRequest request) {
             
             if (processSuccess) {
                 // Redirect đến trang thông báo thanh toán thành công
-                redirectUrl = "http://localhost:3000/payment-success?orderId=" + orderId;
+                redirectUrl = "http://localhost:5173/payment-success?orderId=" + orderId;
             } else {
                 // Có lỗi xử lý sau thanh toán
-                redirectUrl = "http://localhost:3000/payment-failed?reason=process-failed";
+                redirectUrl = "http://localhost:5173/payment-failed?reason=process-failed";
             }
         } else {
             // Thanh toán thất bại
             paymentService.processFailedPayment(orderId);
-            redirectUrl = "http://localhost:3000/payment-failed?reason=payment-failed&code=" + responseCode;
+            redirectUrl = "http://localhost:5173/payment-failed?reason=payment-failed&code=" + responseCode;
         }
         
         // Thực hiện chuyển hướng HTTP
@@ -154,7 +154,7 @@ public ResponseEntity<Object> paymentReturn(HttpServletRequest request) {
     } catch (Exception e) {
         // Nếu có lỗi, redirect đến trang lỗi
         org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
-        headers.add("Location", "http://localhost:3000/payment-failed?reason=server-error");
+        headers.add("Location", "http://localhost:5173/payment-failed?reason=server-error");
         return new ResponseEntity<>(headers, org.springframework.http.HttpStatus.FOUND);
     }
 }
