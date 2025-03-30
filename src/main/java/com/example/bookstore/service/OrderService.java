@@ -152,7 +152,7 @@ public class OrderService {
             detail.setOrder(order);
             detail.setProduct(product);
             detail.setQuantity(item.getQuantity());
-            detail.setPrice(product.getPrice());
+            detail.setPrice(product.getRealPrice());
             
             details.add(detail);
             totalAmount += detail.getPrice() * detail.getQuantity();
