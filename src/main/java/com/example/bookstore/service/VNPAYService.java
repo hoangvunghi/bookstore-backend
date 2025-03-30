@@ -6,25 +6,24 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
 
-import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.stereotype.Service;
 
 import com.example.bookstore.config.VNPAYConfig;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.List;
-import java.util.TimeZone;
-import org.springframework.stereotype.Service;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Service
 public class VNPAYService {
 
     public String createOrder(HttpServletRequest request, int amount, String orderInfor, String urlReturn) {
-        //Các bạn có thể tham khảo tài liệu hướng dẫn và điều chỉnh các tham số
         String vnp_Version = "2.1.0";
         String vnp_Command = "pay";
         String vnp_TxnRef = VNPAYConfig.getRandomNumber(8);

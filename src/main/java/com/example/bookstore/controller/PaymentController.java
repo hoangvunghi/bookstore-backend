@@ -136,7 +136,7 @@ public ResponseEntity<Object> paymentReturn(HttpServletRequest request) {
             
             if (processSuccess) {
                 // Redirect đến trang thông báo thanh toán thành công
-                redirectUrl = "http://localhost:5173/payment-success?orderId=" + orderId;
+                redirectUrl = "http://localhost:5173/payment-success?orderId=" + orderId+"&amount="+amount;
             } else {
                 // Có lỗi xử lý sau thanh toán
                 redirectUrl = "http://localhost:5173/payment-failed?reason=process-failed";
@@ -144,7 +144,7 @@ public ResponseEntity<Object> paymentReturn(HttpServletRequest request) {
         } else {
             // Thanh toán thất bại
             paymentService.processFailedPayment(orderId);
-            redirectUrl = "http://localhost:5173/payment-failed?reason=payment-failed&code=" + responseCode;
+            redirectUrl = "http://localhost:5173/payment-failed?reason=payment-failed&code=" + responseCode+"&amount="+amount;
         }
         
         // Thực hiện chuyển hướng HTTP

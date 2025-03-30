@@ -148,6 +148,11 @@ public class OrderService {
                 continue;
             }
 
+            // Kiểm tra số lượng trong kho
+            if (product.getStockQuantity() < item.getQuantity()) {
+                throw new RuntimeException("Sản phẩm " + product.getName() + " không đủ số lượng trong kho");
+            }
+
             OrderDetail detail = new OrderDetail();
             detail.setOrder(order);
             detail.setProduct(product);
@@ -157,8 +162,9 @@ public class OrderService {
             details.add(detail);
             totalAmount += detail.getPrice() * detail.getQuantity();
             
-            // Cập nhật số lượng đã bán (soldCount) của sản phẩm
+            // Cập nhật cả soldCount và stockQuantity
             product.setSoldCount(product.getSoldCount() + item.getQuantity());
+            product.setStockQuantity(product.getStockQuantity() - item.getQuantity());
             productRepository.save(product);
         }
 
@@ -210,12 +216,12 @@ public class OrderService {
         order.setStatus("CANCELLED");
         orderRepository.save(order);
         
-        // Cập nhật lại soldCount khi hủy đơn hàng
+        // Cập nhật lại cả soldCount và stockQuantity khi hủy đơn hàng
         List<OrderDetail> details = orderDetailRepository.findByOrderOrderId(orderId);
         for (OrderDetail detail : details) {
             Product product = detail.getProduct();
-            // Giảm soldCount khi hủy đơn hàng
             product.setSoldCount(Math.max(0, product.getSoldCount() - detail.getQuantity()));
+            product.setStockQuantity(product.getStockQuantity() + detail.getQuantity()); // Hoàn trả số lượng vào kho
             productRepository.save(product);
         }
         
