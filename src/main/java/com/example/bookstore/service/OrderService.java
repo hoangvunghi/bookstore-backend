@@ -228,6 +228,12 @@ public class OrderService {
                 .map(this::convertToDTO);
     }
 
+    // Lấy tất cả đơn hàng cho quản trị viên
+    public Page<OrderDTO> getAllOrders(Pageable pageable) {
+        return orderRepository.findAll(pageable)
+                .map(this::convertToDTO);
+    }
+
     // Lấy entity Order
     public Order getOrderEntity(Long orderId) {
         return orderRepository.findById(orderId).orElse(null);

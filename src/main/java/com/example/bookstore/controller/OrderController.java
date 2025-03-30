@@ -20,6 +20,7 @@ import com.example.bookstore.dto.CreateOrderRequest;
 import com.example.bookstore.dto.OrderDTO;
 import com.example.bookstore.security.UserDetailsImpl;
 import com.example.bookstore.service.OrderService;
+import io.swagger.v3.oas.annotations.Operation;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -140,5 +141,15 @@ public class OrderController {
             @PageableDefault(size = 10, page = 0) Pageable pageable) {
         Page<OrderDTO> orders = orderService.getOrdersByStatus(status, pageable);
         return ResponseEntity.ok(new ApiResponse(true, "Lấy danh sách đơn hàng theo trạng thái thành công", orders));
+    }
+
+    // API lấy tất cả đơn hàng cho quản trị viên
+    @GetMapping("/admin/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Lấy tất cả đơn hàng cho quản trị viên")
+    public ResponseEntity<ApiResponse> getAllOrders(
+            @PageableDefault(size = 10, page = 0) Pageable pageable) {
+        Page<OrderDTO> orders = orderService.getAllOrders(pageable);
+        return ResponseEntity.ok(new ApiResponse(true, "Lấy danh sách đơn hàng thành công", orders));
     }
 } 
