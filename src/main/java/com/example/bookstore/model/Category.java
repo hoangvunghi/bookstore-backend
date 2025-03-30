@@ -17,12 +17,11 @@ public class Category {
     private Long categoryId;
 
     private String name;
-    private Long parentCategoryId;  // Foreign key, nullable
+    private Long parentCategoryId; 
 
     @ManyToMany(mappedBy = "categories")
     private List<Product> products;
 
-    // Getters, setters, constructors
     public Category() {}
 
     public Long getCategoryId() { return categoryId; }

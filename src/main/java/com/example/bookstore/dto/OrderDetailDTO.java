@@ -11,10 +11,8 @@ public class OrderDetailDTO {
     private int discount;       // Phần trăm giảm giá
     private String productImageUrl;
 
-    // Constructors
     public OrderDetailDTO() {}
 
-    // Getters and Setters
     public int getOriginalPrice() {
         return originalPrice;
     }
@@ -72,7 +70,7 @@ public class OrderDetailDTO {
     }
 
     public int getPrice() {
-        return discountedPrice; // Để tương thích ngược, price trả về giá sau khuyến mãi
+        return discountedPrice; 
     }
 
     public void setPrice(int price) {

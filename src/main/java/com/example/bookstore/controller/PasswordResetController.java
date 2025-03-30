@@ -29,7 +29,6 @@ public class PasswordResetController {
         if (result) {
             return ResponseEntity.ok("Một email hướng dẫn đặt lại mật khẩu đã được gửi đến địa chỉ email của bạn.");
         } else {
-            // Không nên tiết lộ liệu email có tồn tại hay không vì lý do bảo mật
             return ResponseEntity.ok("Nếu email tồn tại trong hệ thống, một hướng dẫn đặt lại mật khẩu sẽ được gửi đến.");
         }
     }

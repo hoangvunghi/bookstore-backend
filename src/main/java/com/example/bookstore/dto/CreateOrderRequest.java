@@ -9,7 +9,6 @@ public class CreateOrderRequest {
     private String shippingPhone;
     private String shippingAddress;
 
-    // Getters và setters
     public List<OrderDetailDTO> getOrderDetails() {
         return orderDetails;
     }

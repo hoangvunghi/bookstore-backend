@@ -17,10 +17,8 @@ public class OrderDTO {
     private String shippingPhone;
     private String shippingAddress;
 
-    // Constructors
     public OrderDTO() {}
 
-    // Getters and Setters
     public Long getOrderId() {
         return orderId;
     }

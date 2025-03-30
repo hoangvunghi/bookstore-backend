@@ -80,11 +80,9 @@ public class AuthController {
     // Register endpoint
     @PostMapping("/register")
     public ResponseEntity<ApiResponse> register(@RequestBody RegisterRequest request) {
-        // Check if the username already exists
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
             return ResponseEntity.badRequest().body(new ApiResponse(false, "Tên đăng nhập đã tồn tại"));
         }
-        // check if the email already exists
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             return ResponseEntity.badRequest().body(new ApiResponse(false, "Email đã tồn tại"));
         }

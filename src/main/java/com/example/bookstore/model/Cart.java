@@ -28,10 +28,8 @@ public class Cart {
 
     private int totalAmount;
 
-    // Constructors
     public Cart() {}
 
-    // Getters and Setters
     public Long getCartId() {
         return cartId;
     }
@@ -64,7 +62,6 @@ public class Cart {
         this.totalAmount = totalAmount;
     }
 
-    // Helper method to calculate total amount
     public void calculateTotalAmount() {
         this.totalAmount = cartDetails.stream()
             .mapToInt(detail -> detail.getQuantity() * detail.getProduct().getPrice())

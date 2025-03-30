@@ -7,5 +7,4 @@ import com.example.bookstore.model.Category;
 
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, Long> {
-    // Custom queries can be added here if needed
 } 

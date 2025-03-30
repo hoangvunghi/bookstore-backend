@@ -17,7 +17,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     Page<Order> findByUser(User user, Pageable pageable);
     List<Order> findByStatus(String status);
     Page<Order> findByStatus(String status, Pageable pageable);
-    // findByUserOrderByOrderDateDesc
     Page<Order> findByUserOrderByOrderDateDesc(User user, Pageable pageable);
     List<Order> findByOrderDateBetween(Date startDate, Date endDate);
     List<Order> findByOrderDateBetweenAndStatus(Date startDate, Date endDate, String status);

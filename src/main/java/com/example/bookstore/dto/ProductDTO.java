@@ -24,7 +24,6 @@ public class ProductDTO {
 
     public ProductDTO() {}
 
-    // Getters and setters
     public Long getProductId() { return productId; }
     public void setProductId(Long productId) { this.productId = productId; }
     public String getName() { return name; }

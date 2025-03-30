@@ -25,10 +25,8 @@ public class CartDetail {
 
     private int quantity;
 
-    // Constructors
     public CartDetail() {}
 
-    // Getters and Setters
     public Long getCartDetailId() {
         return cartDetailId;
     }

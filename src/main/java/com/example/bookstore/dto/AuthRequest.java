@@ -4,7 +4,6 @@ public class AuthRequest {
     private String username;
     private String password;
 
-    // Constructors
     public AuthRequest() {}
 
     public AuthRequest(String username, String password) {
@@ -12,7 +11,6 @@ public class AuthRequest {
         this.password = password;
     }
 
-    // Getters and Setters
     public String getUsername() {
         return username;
     }

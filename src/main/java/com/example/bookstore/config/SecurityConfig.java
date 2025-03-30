@@ -18,7 +18,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import com.example.bookstore.security.JwtAuthenticationFilter;
 import com.example.bookstore.security.UserDetailsServiceImpl;
 
-import io.swagger.v3.oas.models.PathItem;
 
 @Configuration
 @EnableMethodSecurity
@@ -50,23 +49,23 @@ public class SecurityConfig {
         http
             .securityMatcher("/api/**") // Chỉ áp dụng bảo mật cho API
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(new AntPathRequestMatcher("/api/auth/login")).permitAll() // Cho phép không cần auth
-                .requestMatchers(new AntPathRequestMatcher("/api/auth/refresh")).permitAll() // Cho phép không cần auth
-                .requestMatchers(new AntPathRequestMatcher("/api/auth/register")).permitAll() // Cho phép không cần auth
+                .requestMatchers(new AntPathRequestMatcher("/api/auth/login")).permitAll()  
+                .requestMatchers(new AntPathRequestMatcher("/api/auth/refresh")).permitAll() 
+                .requestMatchers(new AntPathRequestMatcher("/api/auth/register")).permitAll() 
                 .requestMatchers(new AntPathRequestMatcher("/api/password/forgot")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/api/auth/role")).permitAll() // Cho phép API quên mật khẩu
-                .requestMatchers(new AntPathRequestMatcher("/api/password/reset/validate")).permitAll() // Cho phép API validate token
-                .requestMatchers(new AntPathRequestMatcher("/api/password/reset")).permitAll() // Cho phép API đặt lại mật khẩu
+                .requestMatchers(new AntPathRequestMatcher("/api/auth/role")).permitAll() 
+                .requestMatchers(new AntPathRequestMatcher("/api/password/reset/validate")).permitAll() 
+                .requestMatchers(new AntPathRequestMatcher("/api/password/reset")).permitAll() 
                 .requestMatchers(new AntPathRequestMatcher("/api/admin/**")).hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/product-categories/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/images/**").permitAll() // Cho phép truy cập hình ảnh
-                .requestMatchers("/api/payment/vnpay-return").permitAll() // Cho phép truy cập endpoint VNPAY return
-                .anyRequest().authenticated() // Các request khác phải xác thực
+                .requestMatchers(HttpMethod.GET, "/images/**").permitAll() 
+                .requestMatchers("/api/payment/vnpay-return").permitAll() 
+                .anyRequest().authenticated() 
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Không dùng session
-            .csrf(csrf -> csrf.disable()) // Tắt CSRF (vì API REST không cần)
+            .csrf(csrf -> csrf.disable()) 
             .cors()
             .and()
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

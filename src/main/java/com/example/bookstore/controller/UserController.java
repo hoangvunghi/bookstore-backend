@@ -33,8 +33,7 @@ public class UserController {
             return ResponseEntity.notFound()
                 .build();
         }
-
-        // Tạo DTO để trả về (không bao gồm mật khẩu)
+        
         UserProfileDTO profileDTO = new UserProfileDTO();
         profileDTO.setFullName(user.getFullName());
         profileDTO.setEmail(user.getEmail());

@@ -6,7 +6,6 @@ public class OrderPaymentRequest {
     private Long orderId;
     private PaymentMethod paymentMethod;
 
-    // Getters và setters
     public Long getOrderId() {
         return orderId;
     }

@@ -118,7 +118,7 @@ public class AdminUserController {
                                                 Map.of("newPassword", newPassword)));
     }
 
-    // Thay đổi vai trò của người dùng (USER <-> ADMIN)
+    // Thay đổi vai trò của người dùng 
     @PutMapping("/{id}/role")
     public ResponseEntity<ApiResponse> changeRole(@PathVariable Long id, @RequestParam String role) {
         try {

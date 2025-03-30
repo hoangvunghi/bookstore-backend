@@ -5,10 +5,8 @@ public class ProductImageDTO {
     private Long productId;
     private String imageURL;
 
-    // Constructors
     public ProductImageDTO() {}
 
-    // Getters and Setters
     public Long getProductImageId() {
         return productImageId;
     }

@@ -8,10 +8,8 @@ public class CartDTO {
     private List<CartDetailDTO> cartDetails;
     private int totalAmount;
 
-    // Constructors
     public CartDTO() {}
 
-    // Getters and Setters
     public Long getCartId() {
         return cartId;
     }

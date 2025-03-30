@@ -11,10 +11,8 @@ public class ReviewDTO {
     private String comment;
     private Date createdDate;
 
-    // Constructors
     public ReviewDTO() {}
 
-    // Getters and Setters
     public Long getReviewId() {
         return reviewId;
     }

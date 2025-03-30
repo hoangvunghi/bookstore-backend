@@ -13,7 +13,6 @@ public class PaymentResponse {
         this.orderId = orderId;
     }
 
-    // Getters và setters
     public String getStatus() {
         return status;
     }

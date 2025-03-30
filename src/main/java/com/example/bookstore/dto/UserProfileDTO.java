@@ -8,10 +8,8 @@ public class UserProfileDTO {
     private String currentPassword;
     private String newPassword;
 
-    // Constructors
     public UserProfileDTO() {}
 
-    // Getters and Setters
     public String getFullName() {
         return fullName;
     }

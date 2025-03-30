@@ -6,7 +6,6 @@ public class RegisterRequest {
     private String email;
     private String fullName;
 
-    // Constructors
     public RegisterRequest() {}
 
     public RegisterRequest(String username, String password, String email, String fullName) {
@@ -16,7 +15,6 @@ public class RegisterRequest {
         this.fullName = fullName;
     }
 
-    // Getters and Setters
     public String getUsername() {
         return username;
     }

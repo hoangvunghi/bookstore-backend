@@ -12,12 +12,10 @@ public class UserDTO {
     private String role;
     private boolean isActive;
     private Date registrationDate;
-    private String password; // Chỉ dùng khi tạo mới, không trả về
+    private String password; 
 
-    // Constructors
     public UserDTO() {}
 
-    // Getters and Setters
     public Long getUserId() {
         return userId;
     }

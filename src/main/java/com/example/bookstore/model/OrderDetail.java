@@ -26,7 +26,6 @@ public class OrderDetail {
     private int quantity;
     private int price;
 
-    // Getters, setters, constructors
     public OrderDetail() {}
 
     public Long getOrderDetailId() { return orderDetailId; }

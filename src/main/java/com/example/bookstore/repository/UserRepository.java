@@ -19,14 +19,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmail(String email);
     List<User> findByRegistrationDateBetween(Date startDate, Date endDate);
     
-    // Tìm kiếm người dùng theo tên, email, username
     Page<User> findByUsernameContainingOrEmailContainingOrFullNameContaining(
             String username, String email, String fullName, Pageable pageable);
     
-    // Đếm số lượng người dùng theo trạng thái
     long countByIsActiveTrue();
     long countByIsActiveFalse();
     
-    // Đếm số lượng người dùng theo vai trò
     long countByRole(String role);
 }

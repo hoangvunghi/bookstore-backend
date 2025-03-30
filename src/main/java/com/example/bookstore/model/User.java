@@ -37,7 +37,6 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<Review> reviews;
 
-    // Getters, setters, constructors
     public User() {}
 
     public Long getUserId() { return userId; }

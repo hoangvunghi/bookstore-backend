@@ -63,7 +63,6 @@ public class Product {
     @OneToMany(mappedBy = "product")
     private List<ProductImage> productImages;
 
-    // Getters, setters, constructors
     public Product() {}
 
     public Long getProductId() { return productId; }

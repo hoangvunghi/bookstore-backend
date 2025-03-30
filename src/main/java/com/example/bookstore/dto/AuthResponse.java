@@ -7,8 +7,8 @@ public class AuthResponse {
     private String refreshToken;
     private String error;
     private String role;
-    private Date accessTokenExpirationDate;  // Thời điểm hết hạn của access token
-    private Date refreshTokenExpirationDate; // Thời điểm hết hạn của refresh token
+    private Date accessTokenExpirationDate;  
+    private Date refreshTokenExpirationDate; 
 
     // Constructors
     public AuthResponse() {}

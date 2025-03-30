@@ -23,7 +23,6 @@ public class ProductImage {
     @Column(columnDefinition = "TEXT")
     private String imageURL;  
 
-    // Getters, setters, constructors
     public ProductImage() {}
 
     public Long getProductImageId() { return productImageId; }

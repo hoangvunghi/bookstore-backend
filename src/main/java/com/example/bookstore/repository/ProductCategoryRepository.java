@@ -15,5 +15,4 @@ import com.example.bookstore.model.ProductCategory;
 public interface ProductCategoryRepository extends JpaRepository<ProductCategory, Long> {
     Page<ProductCategory> findAll(Pageable pageable);
     Optional<ProductCategory> findByProductAndCategory(Product product, Category category);
-    // Custom queries can be added here if needed
 } 

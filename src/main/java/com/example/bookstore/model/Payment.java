@@ -29,7 +29,6 @@ public class Payment {
     private Date paymentDate;
     private String status;
 
-    // Getters, setters, constructors
     public Payment() {}
 
     public Long getPaymentId() { return paymentId; }

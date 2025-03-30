@@ -30,7 +30,7 @@ public class CorsConfig {
         config.addExposedHeader("Authorization");
         config.addExposedHeader("Content-Type");
         
-        // Thời gian cache cho preflight request (3600 giây = 1 giờ)
+        // Thời gian cache cho preflight request (1 giờ)
         config.setMaxAge(3600L);
         
         source.registerCorsConfiguration("/**", config);

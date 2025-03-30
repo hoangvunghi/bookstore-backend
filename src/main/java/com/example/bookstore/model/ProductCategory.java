@@ -23,7 +23,6 @@ public class ProductCategory {
     @JoinColumn(name = "categoryId")
     private Category category;
 
-    // Getters, setters, constructors
     public ProductCategory() {}
 
     public Long getProductCategoryId() { return productCategoryId; }

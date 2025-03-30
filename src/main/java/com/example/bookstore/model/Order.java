@@ -28,11 +28,10 @@ public class Order {
     private int totalAmount;
     private String status;
 
-    // Thông tin địa chỉ giao hàng
     private String shippingFullName;
     private String shippingPhone;
     private String shippingAddress;
-    private boolean useUserAddress; // true nếu sử dụng địa chỉ từ tài khoản
+    private boolean useUserAddress; 
 
     @OneToMany(mappedBy = "order")
     private List<OrderDetail> orderDetails;
@@ -40,7 +39,6 @@ public class Order {
     @OneToOne(mappedBy = "order")
     private Payment payment;
 
-    // Getters, setters, constructors
     public Order() {}
 
     public Long getOrderId() { return orderId; }
@@ -57,8 +55,6 @@ public class Order {
     public void setOrderDetails(List<OrderDetail> orderDetails) { this.orderDetails = orderDetails; }
     public Payment getPayment() { return payment; }
     public void setPayment(Payment payment) { this.payment = payment; }
-
-    // Getters và setters cho thông tin địa chỉ giao hàng
     public String getShippingFullName() { return shippingFullName; }
     public void setShippingFullName(String shippingFullName) { this.shippingFullName = shippingFullName; }
     public String getShippingPhone() { return shippingPhone; }
